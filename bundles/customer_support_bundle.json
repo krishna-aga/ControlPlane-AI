@@ -1,0 +1,29 @@
+{
+  "policy_name": "customer-support-bot",
+  "policy_version": "v1.0.0",
+  "policy_hash": "9e5e653c18d4b3ff896315642e95caf8dfc026e21db29ba8b3b054db17d68496",
+  "compiled_at": "2026-08-29T11:38:40.999949+00:00",
+  "description": "Optimized for fast response times and customer interaction.",
+  "latency_budget_ms": 200,
+  "t2_enabled": false,
+  "pii_mode": "redact-and-proceed",
+  "fail_mode": "fail_open",
+  "allow_downrouting": true,
+  "caching_enabled": true,
+  "pii_threshold": 0.8,
+  "grounding_threshold": 0.6,
+  "toxicity_threshold": 0.7,
+  "low_band": 0.3,
+  "high_band": 0.7,
+  "cache_threshold": 0.9,
+  "detector_weights": {
+    "t0": 0.4,
+    "pii": 0.2,
+    "grounding": 0.2,
+    "toxicity": 0.2
+  },
+  "locked_fields": [
+    "pii_threshold",
+    "grounding_threshold"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "policy_name": "decision-support-tool",
+  "policy_version": "v1.0.0",
+  "policy_hash": "b5588dd5189834ebca313603e8a4401b85f2905cd124310c3bacff0adde94f51",
+  "compiled_at": "2026-08-29T11:38:41.203476+00:00",
+  "description": "High-compliance regulated workflow decision support tool.",
+  "latency_budget_ms": 800,
+  "t2_enabled": true,
+  "pii_mode": "block-and-explain",
+  "fail_mode": "fail_closed",
+  "allow_downrouting": false,
+  "caching_enabled": false,
+  "pii_threshold": 0.5,
+  "grounding_threshold": 0.6,
+  "toxicity_threshold": 0.7,
+  "low_band": 0.3,
+  "high_band": 0.7,
+  "cache_threshold": 0.9,
+  "detector_weights": {
+    "t0": 0.4,
+    "pii": 0.2,
+    "grounding": 0.2,
+    "toxicity": 0.2
+  },
+  "locked_fields": [
+    "grounding_threshold",
+    "pii_threshold"
+  ]
+}

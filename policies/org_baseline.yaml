@@ -1,0 +1,30 @@
+# Org Baseline Policy
+# Defines default enterprise guardrails and locks baseline safety fields.
+
+policy_name: org-baseline
+policy_version: v1.0.0
+description: Enterprise-wide baseline security & privacy guardrails
+
+# Default thresholds
+pii_threshold: 0.8
+grounding_threshold: 0.6
+toxicity_threshold: 0.7
+
+# Risk bands
+low_band: 0.3
+high_band: 0.7
+
+# Semantic cache default
+cache_threshold: 0.90
+
+# Default detector weights for risk fusion
+detector_weights:
+  t0: 0.4
+  pii: 0.2
+  grounding: 0.2
+  toxicity: 0.2
+
+# Fields locked by enterprise compliance - inner layers can ONLY tighten these fields
+locked_fields:
+  - pii_threshold
+  - grounding_threshold

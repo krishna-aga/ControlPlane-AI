@@ -1,0 +1,14 @@
+# Customer Support Bot Policy
+# Profile A: High throughput, strict latency budget (200ms), redact-and-proceed PII mode, fail-open.
+
+policy_name: customer-support-bot
+policy_version: v1.0.0
+description: Optimized for fast response times and customer interaction.
+
+latency_budget_ms: 200
+t2_enabled: false
+pii_mode: redact-and-proceed
+fail_mode: fail_open
+allow_downrouting: true
+caching_enabled: true
+cache_threshold: 0.90
