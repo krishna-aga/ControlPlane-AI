@@ -18,6 +18,7 @@ This directory maintains persistent memory, skill specifications, and agent oper
 2. **Skill Registration:** Whenever a new capability, workflow, or CLI command is introduced, update this index and create/update the corresponding `.agents/skills/<skill_name>.md`.
 3. **Stateless Compliance:** Ensure no hardcoded policy constants exist in the Data Plane code; all settings must be dynamically read from `bundle.json`.
 4. **Privacy First:** Ensure audit logs only record scores, entity types, and character spans—never raw PII values.
+5. **Explicit Change Transparency:** Whenever an agent makes structural implementation changes, library/framework shifts (e.g., using `@dataclass` instead of `Pydantic`), or refactoring decisions, the agent MUST explicitly and **boldly** state the change in their response to the user.
 
 ## Skill Index
 | Skill File | Description | Trigger / Objective |

@@ -33,8 +33,8 @@ def resolve_policy(base_policy: PolicyConfig, child_policy: PolicyConfig) -> Dic
     - If child attempts to loosen a locked field, raises PolicyLockingError.
     - Validates cumulative detector latency against latency_budget_ms.
     """
-    resolved: Dict[str, Any] = base_policy.to_dict()
-    child_dict: Dict[str, Any] = child_policy.to_dict()
+    resolved: Dict[str, Any] = base_policy.model_dump(exclude_unset=True)
+    child_dict: Dict[str, Any] = child_policy.model_dump(exclude_unset=True)
 
     locked_fields: List[str] = list(set(
         resolved.get("locked_fields", []) + child_dict.get("locked_fields", [])

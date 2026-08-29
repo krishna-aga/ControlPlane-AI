@@ -1,10 +1,10 @@
 """
 Data models and custom exception definitions for ControlPlane.ai
-Built using standard library dataclasses for zero-dependency portability.
+Built using Pydantic v2 for robust schema validation and type safety.
 """
 
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional, Literal, Any
+from typing import Dict, List, Optional, Literal
+from pydantic import BaseModel, Field
 
 
 class PolicyLockingError(Exception):
@@ -17,8 +17,7 @@ class LatencyBudgetExceededError(Exception):
     pass
 
 
-@dataclass
-class PolicyConfig:
+class PolicyConfig(BaseModel):
     """Schema representing a raw or partial policy YAML file."""
 
     policy_name: Optional[str] = None
@@ -26,36 +25,31 @@ class PolicyConfig:
     description: Optional[str] = ""
 
     # Latency & Execution Controls
-    latency_budget_ms: Optional[int] = None
+    latency_budget_ms: Optional[int] = Field(default=None, ge=10, le=5000)
     t2_enabled: Optional[bool] = None
-    pii_mode: Optional[str] = None  # "redact-and-proceed", "block-and-explain", "warn-and-confirm"
-    fail_mode: Optional[str] = None  # "fail_open", "fail_closed"
+    pii_mode: Optional[Literal["redact-and-proceed", "block-and-explain", "warn-and-confirm"]] = None
+    fail_mode: Optional[Literal["fail_open", "fail_closed"]] = None
     allow_downrouting: Optional[bool] = None
     caching_enabled: Optional[bool] = True
 
     # Sensitivity Thresholds (Lower numerical value = stricter detection)
-    pii_threshold: Optional[float] = None
-    grounding_threshold: Optional[float] = None
-    toxicity_threshold: Optional[float] = None
+    pii_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    grounding_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    toxicity_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
     # Risk Fusion Bands
-    low_band: Optional[float] = None
-    high_band: Optional[float] = None
-    cache_threshold: Optional[float] = None
+    low_band: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    high_band: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    cache_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
     # Detector Weights for fusion engine
     detector_weights: Optional[Dict[str, float]] = None
 
     # Locked fields list
-    locked_fields: List[str] = field(default_factory=list)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert dataclass instance to dictionary excluding None values."""
-        return {k: v for k, v in asdict(self).items() if v is not None}
+    locked_fields: List[str] = Field(default_factory=list)
 
 
-@dataclass
-class BundleConfig:
+class BundleConfig(BaseModel):
     """Schema representing a compiled, resolved, immutable JSON policy bundle."""
 
     policy_name: str
@@ -67,8 +61,8 @@ class BundleConfig:
     # Operational settings
     latency_budget_ms: int = 200
     t2_enabled: bool = False
-    pii_mode: str = "redact-and-proceed"
-    fail_mode: str = "fail_open"
+    pii_mode: Literal["redact-and-proceed", "block-and-explain", "warn-and-confirm"] = "redact-and-proceed"
+    fail_mode: Literal["fail_open", "fail_closed"] = "fail_open"
     allow_downrouting: bool = True
     caching_enabled: bool = True
 
@@ -83,9 +77,5 @@ class BundleConfig:
     cache_threshold: float = 0.90
 
     # Fusion weights & locked fields record
-    detector_weights: Dict[str, float] = field(default_factory=lambda: {"t0": 0.4, "pii": 0.2, "grounding": 0.2, "toxicity": 0.2})
-    locked_fields: List[str] = field(default_factory=list)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return asdict(self)
+    detector_weights: Dict[str, float] = Field(default_factory=lambda: {"t0": 0.4, "pii": 0.2, "grounding": 0.2, "toxicity": 0.2})
+    locked_fields: List[str] = Field(default_factory=list)

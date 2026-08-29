@@ -66,5 +66,6 @@ The system enforces different latency and risk thresholds using identical gatewa
 * **Strict Privacy in Storage:** Never store raw sensitive PII or unredaction maps in the audit ledger—log entity types, character spans, and confidence scores only.
 * **Locking Enforcement:** Downstream policy layers can make locked fields stricter, never looser.
 * **Fail Mode Compliance:** Hard timeouts on detector execution fall back to the bundle's `fail_open` or `fail_closed` setting.
+* **Explicit Change Transparency:** Whenever an agent makes structural implementation changes, library/framework shifts (e.g., using `@dataclass` instead of `Pydantic`), or refactoring decisions, the agent MUST explicitly and **boldly** state the change in their response to the user.
 
 ---

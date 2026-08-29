@@ -61,7 +61,7 @@ def compile_bundle(
 
     # Write formatted bundle JSON
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(bundle.to_dict(), f, indent=2)
+        json.dump(bundle.model_dump(), f, indent=2)
 
     print(f"[ControlPlane Compiler] Compiled bundle '{bundle.policy_name}' ({bundle.policy_version}) -> {out_path}")
     print(f"[ControlPlane Compiler] Policy SHA-256 Hash: {bundle.policy_hash}")

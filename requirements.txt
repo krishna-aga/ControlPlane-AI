@@ -1,0 +1,7 @@
+# ControlPlane.ai Dependencies
+
+# YAML parsing for Control Plane policy files
+pyyaml>=6.0
+
+# Pydantic schema validation for Control Plane & Data Plane
+pydantic>=2.0
