@@ -9,8 +9,13 @@ This directory maintains persistent memory, skill specifications, and agent oper
 └── skills/                   # Modular technical skill specifications
     ├── compile_bundle.md      # Control Plane policy compilation & locking
     ├── execute_data_plane.md  # Real-time Data Plane execution pipeline
+    ├── t0_deterministic_checks.md  # Tier 0 canary / checksum / secret / blocklist checks
     ├── run_shadow_eval.md     # Learning Plane false-negative counterfactual estimation
-    └── verify_ledger.md       # Audit ledger cryptographic hash-chain verification
+    ├── verify_ledger.md       # Audit ledger cryptographic hash-chain verification
+    └── prompt injection/      # Input Gate sub-skills
+        ├── text_normalization.md
+        ├── input_gate_heuristics.md
+        └── ml_classifier.md
 ```
 
 ## Agent Operational Rules
@@ -25,5 +30,9 @@ This directory maintains persistent memory, skill specifications, and agent oper
 | :--- | :--- | :--- |
 | [`compile_bundle.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/compile_bundle.md) | Control Plane Bundle Compiler | Resolves layered YAML policies, enforces field-level locking, hashes SHA-256 bundle. |
 | [`execute_data_plane.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/execute_data_plane.md) | Data Plane Gateway Pipeline | Intercepts requests, executes T0/T1/T2 checks, semantic caching, and risk fusion. |
+| [`t0_deterministic_checks.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/t0_deterministic_checks.md) | Tier 0 Deterministic Output Checks | Dual-canary leak detection, Luhn/Verhoeff ID validation, secret scanning, blocklists (~5 ms, zero cost). |
+| [`prompt injection/text_normalization.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/prompt%20injection/text_normalization.md) | Input Text Normalization | Canonicalizes prompts: base64/hex decode, NFKC, invisible-char strip, leetspeak mapping. |
+| [`prompt injection/input_gate_heuristics.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/prompt%20injection/input_gate_heuristics.md) | Input Gate Heuristic Scanner | Compiled regex signatures for instruction override, jailbreak, and system-prompt extraction. |
+| [`prompt injection/ml_classifier.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/prompt%20injection/ml_classifier.md) | Input Gate ML Classifier | DeBERTa/MiniLM semantic injection scoring for prompts that evade static regex. |
 | [`run_shadow_eval.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/run_shadow_eval.md) | False-Negative Shadow Estimator | Counterfactually samples ALLOWED traffic to run offline T2 judging. |
 | [`verify_ledger.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/verify_ledger.md) | Ledger Integrity Verifier | Verifies cryptographic `prev_hash` chain integrity across audit log records. |
