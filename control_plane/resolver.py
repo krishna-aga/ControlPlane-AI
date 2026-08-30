@@ -1,21 +1,22 @@
 """
 Policy Resolver for ControlPlane.ai
-Handles 2-tier policy inheritance, strict field-level locking, and latency budget verification.
+Handles 2-tier policy inheritance, strict field-level locking, and structural validation.
 """
 
 from typing import Dict, Any, List
 import yaml
 
-from control_plane.models import (
-    PolicyConfig,
-    PolicyLockingError,
-    LatencyBudgetExceededError,
-)
+from control_plane.models import PolicyConfig, PolicyLockingError
 
-# Minimum latency estimates per safety tier (ms)
-T0_ESTIMATED_MS = 5
-T1_ESTIMATED_MS = 40
-T2_ESTIMATED_MS = 600
+# There is deliberately no latency budget and no per-tier latency estimates here.
+# The estimates that used to live at this point (T0=5, T1=40, T2=600) were unvalidated
+# hardcoded guesses - measured T0 is 0.13ms - and the budget they fed created a
+# safety-theatre configuration: a tenant could declare the minimum budget alongside
+# fail_open, so any detector overrun shipped unchecked output while still compiling to
+# a clean, hash-attested bundle.
+#
+# Latency is now measured and reported per stage, never negotiated. `t2_enabled` is the
+# only depth knob. See docs/NO_LATENCY_BUDGET.md
 
 # --- Field strictness registry ---------------------------------------------
 # Declarative, so adding a field means adding it to a set rather than growing an
@@ -39,7 +40,6 @@ LOWER_IS_STRICTER = {
 #   inverted its lock: tenants could loosen it and were blocked from tightening it.
 #   See P1 in docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md
 HIGHER_IS_STRICTER = {
-    "latency_budget_ms",
     "grounding_threshold",
     # A larger penalty adds more risk for a disguised prompt -> stricter.
     "injection_evasion_penalty",
@@ -76,7 +76,6 @@ def resolve_policy(base_policy: PolicyConfig, child_policy: PolicyConfig) -> Dic
     Enforces strict field-level locking:
     - If a field is in base_policy.locked_fields, child can only make it stricter.
     - If child attempts to loosen a locked field, raises PolicyLockingError.
-    - Validates cumulative detector latency against latency_budget_ms.
     """
     resolved: Dict[str, Any] = base_policy.model_dump(exclude_unset=True)
     child_dict: Dict[str, Any] = child_policy.model_dump(exclude_unset=True)
@@ -111,9 +110,6 @@ def resolve_policy(base_policy: PolicyConfig, child_policy: PolicyConfig) -> Dic
     _validate_band_ordering(resolved)
     _validate_weight_integrity(resolved)
     _validate_critical_coherence(resolved)
-
-    # Validate latency budget
-    _validate_latency_budget(resolved)
 
     return resolved
 
@@ -181,7 +177,6 @@ def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:
         "policy_name": "resolved-policy",
         "policy_version": "v1.0.0",
         "description": "Resolved policy bundle",
-        "latency_budget_ms": 200,
         "t2_enabled": False,
         "pii_mode": "redact-and-proceed",
         "fail_mode": "fail_open",
@@ -247,19 +242,3 @@ def _validate_critical_coherence(policy_dict: Dict[str, Any]) -> None:
                 f"(0.5 == the detection threshold)."
             )
 
-
-def _validate_latency_budget(policy_dict: Dict[str, Any]) -> None:
-    """Check if latency budget is sufficient to run configured safety tiers."""
-    budget = policy_dict.get("latency_budget_ms", 200)
-    t2_enabled = policy_dict.get("t2_enabled", False)
-
-    required_latency = T0_ESTIMATED_MS + T1_ESTIMATED_MS
-    if t2_enabled:
-        required_latency += T2_ESTIMATED_MS
-
-    if budget < required_latency:
-        raise LatencyBudgetExceededError(
-            f"Latency budget of {budget}ms is insufficient for requested configuration. "
-            f"Required estimated latency is {required_latency}ms "
-            f"(T0: {T0_ESTIMATED_MS}ms, T1: {T1_ESTIMATED_MS}ms, T2: {T2_ESTIMATED_MS if t2_enabled else 0}ms)."
-        )

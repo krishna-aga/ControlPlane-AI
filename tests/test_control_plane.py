@@ -11,11 +11,7 @@ import sys
 import tempfile
 import unittest
 
-from control_plane.models import (
-    PolicyConfig,
-    PolicyLockingError,
-    LatencyBudgetExceededError,
-)
+from control_plane.models import BundleConfig, PolicyConfig, PolicyLockingError
 from control_plane.resolver import resolve_policy, load_yaml_policy
 from control_plane.compiler import compile_bundle, compute_policy_hash
 
@@ -67,20 +63,42 @@ class TestControlPlane(unittest.TestCase):
         resolved = resolve_policy(base, child)
         self.assertEqual(resolved["pii_threshold"], 0.5)
 
-    def test_latency_budget_exceeded(self):
-        """Verify LatencyBudgetExceededError when budget cannot fit enabled T2 judge (645ms required)."""
-        base = PolicyConfig(latency_budget_ms=200)
-        child = PolicyConfig(t2_enabled=True, latency_budget_ms=200)
+    def test_no_latency_budget_field_exists(self):
+        """
+        Latency is measured and reported, never negotiated - a tenant cannot buy speed
+        with safety. The removed budget allowed a safety-theatre bundle: minimum budget
+        plus fail_open meant any detector overrun shipped unchecked output, while still
+        compiling to a clean, hash-attested bundle.
 
-        with self.assertRaises(LatencyBudgetExceededError) as ctx:
-            resolve_policy(base, child)
-        
-        self.assertIn("Latency budget of 200ms is insufficient", str(ctx.exception))
+        `t2_enabled` is now the only depth knob. See docs/NO_LATENCY_BUDGET.md
+        """
+        self.assertNotIn("latency_budget_ms", PolicyConfig.model_fields)
+        self.assertNotIn("latency_budget_ms", BundleConfig.model_fields)
+
+        # An unknown field must not silently reappear through a policy file either.
+        resolved = resolve_policy(PolicyConfig(), PolicyConfig(t2_enabled=True))
+        self.assertNotIn("latency_budget_ms", resolved)
+
+    def test_fail_mode_is_locked_and_tightenable_only(self):
+        """
+        fail_mode is the other half of the starve vector: a short budget only shipped
+        unchecked output because fail_open was reachable. It is now SET and locked in
+        the baseline at its loosest rung, so tenants may tighten and never loosen.
+        """
+        base = load_yaml_policy("policies/org_baseline.yaml")
+        self.assertIn("fail_mode", base.locked_fields)
+
+        tightened = resolve_policy(base, PolicyConfig(fail_mode="fail_closed"))
+        self.assertEqual(tightened["fail_mode"], "fail_closed")
+
+        stricter_base = PolicyConfig(fail_mode="fail_closed", locked_fields=["fail_mode"])
+        with self.assertRaises(PolicyLockingError):
+            resolve_policy(stricter_base, PolicyConfig(fail_mode="fail_open"))
 
     def test_hash_reproducibility(self):
         """Verify that identical policy settings produce identical SHA-256 policy_hash."""
-        resolved_a = {"policy_name": "test", "pii_threshold": 0.5, "latency_budget_ms": 500}
-        resolved_b = {"latency_budget_ms": 500, "pii_threshold": 0.5, "policy_name": "test"}
+        resolved_a = {"policy_name": "test", "pii_threshold": 0.5, "toxicity_threshold": 0.7}
+        resolved_b = {"toxicity_threshold": 0.7, "pii_threshold": 0.5, "policy_name": "test"}
 
         hash_a = compute_policy_hash(resolved_a)
         hash_b = compute_policy_hash(resolved_b)

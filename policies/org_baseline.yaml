@@ -5,6 +5,12 @@ policy_name: org-baseline
 policy_version: v1.0.0
 description: Enterprise-wide baseline security & privacy guardrails
 
+# Failure posture. SET here, not merely locked: resolve_policy() only compares a locked
+# field when the key is present in the base dump, so locking an unset field is a silent
+# no-op. fail_open is the loosest rung of ENUM_STRICTNESS, so tenants may tighten to
+# fail_closed and can never loosen.
+fail_mode: fail_open
+
 # Default thresholds
 pii_threshold: 0.8
 grounding_threshold: 0.6
@@ -82,3 +88,4 @@ locked_fields:
   - injection_action
   - injection_evasion_penalty
   - input_risk_tightening
+  - fail_mode

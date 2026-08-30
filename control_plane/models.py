@@ -12,11 +12,6 @@ class PolicyLockingError(Exception):
     pass
 
 
-class LatencyBudgetExceededError(Exception):
-    """Raised when latency budget is insufficient for active safety checks."""
-    pass
-
-
 class PolicyConfig(BaseModel):
     """Schema representing a raw or partial policy YAML file."""
 
@@ -24,8 +19,11 @@ class PolicyConfig(BaseModel):
     policy_version: Optional[str] = "v1.0.0"
     description: Optional[str] = ""
 
-    # Latency & Execution Controls
-    latency_budget_ms: Optional[int] = Field(default=None, ge=10, le=5000)
+    # Execution Controls.
+    # There is deliberately NO latency budget field. Latency is measured and reported,
+    # never negotiated: a tenant cannot buy speed with safety. `t2_enabled` is the only
+    # depth/cost knob, and it is expressed as a safety choice rather than a millisecond
+    # count. See docs/NO_LATENCY_BUDGET.md
     t2_enabled: Optional[bool] = None
     pii_mode: Optional[Literal["redact-and-proceed", "block-and-explain", "warn-and-confirm"]] = None
     fail_mode: Optional[Literal["fail_open", "fail_closed"]] = None
@@ -103,8 +101,7 @@ class BundleConfig(BaseModel):
     compiled_at: str
     description: str = ""
 
-    # Operational settings
-    latency_budget_ms: int = 200
+    # Operational settings (no latency budget - see PolicyConfig)
     t2_enabled: bool = False
     pii_mode: Literal["redact-and-proceed", "block-and-explain", "warn-and-confirm"] = "redact-and-proceed"
     fail_mode: Literal["fail_open", "fail_closed"] = "fail_open"

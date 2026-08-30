@@ -1,11 +1,10 @@
 # Internal Employee Copilot Policy
-# Profile C: Forgiving internal assistant, 400ms budget, warn-and-confirm PII mode, fail-open.
+# Profile C: Forgiving internal assistant, warn-and-confirm PII mode, fail-open.
 
 policy_name: internal-employee-copilot
 policy_version: v1.0.0
 description: Internal enterprise employee assistant.
 
-latency_budget_ms: 400
 t2_enabled: false
 pii_mode: warn-and-confirm
 fail_mode: fail_open

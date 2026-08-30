@@ -38,7 +38,7 @@
 ### Input Contract
 ```python
 raw_prompt: str         # The un-sanitized user prompt
-bundle: dict            # Loaded JSON bundle containing "pii_mode" and "latency_budget_ms"[cite: 2, 3]
+bundle: dict            # Loaded JSON bundle containing "pii_mode" and "injection_action"
 ```
 
 ### Output Contract (`InputGateResult`)

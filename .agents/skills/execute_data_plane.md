@@ -29,7 +29,7 @@ result = await process_request(
 ```
 
 ## Pipeline Execution Steps
-1. **Load Bundle & Validate Budget:** Read `latency_budget_ms`, `t2_enabled`, `pii_mode`, `fail_mode`.
+1. **Load Bundle & Verify Hash:** Read `t2_enabled`, `pii_mode`, `fail_mode`, `injection_action`. There is no latency budget — see `docs/NO_LATENCY_BUDGET.md`.
 2. **Input Gate:** Prompt injection check + PII redaction (`redact-and-proceed` / `block-and-explain`).
 3. **Semantic Cache Check:** Check cache by key `(tenant_id, scope, policy_hash, prompt_embedding)`. Return $\sim 8\text{ ms}$ hit if valid.
 4. **Upstream Model Call (BYOK):** Call model API; stream monitor cuts off runaway tokens or repetition loops.
@@ -42,5 +42,5 @@ result = await process_request(
 
 ## Validation Checks
 1. No raw PII stored in ledger output.
-2. Hard detector timeouts strictly trigger `bundle.fail_mode` (`fail_open` vs `fail_closed`).
-3. Total pipeline latency stays within `latency_budget_ms`.
+2. Detector *exceptions* and model-call failures trigger `bundle.fail_mode` (`fail_open` vs `fail_closed`). There are no timeouts.
+3. Per-stage `latency_ms` is measured and recorded in every ledger row — reported, never negotiated.

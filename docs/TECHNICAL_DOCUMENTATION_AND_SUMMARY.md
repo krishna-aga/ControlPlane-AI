@@ -5,7 +5,7 @@
 * **Competition Track:** Accenture Innovation Challenge 2026 (Round 2, Problem Track 1: **ControlPlane.ai**)
 * **Core Purpose:** A real-time, multi-tier Responsible AI safety and governance gateway that intercepts Generative AI requests and responses, decoupling policy configuration (YAML) from runtime enforcement code.
 * **Core Architecture:** 3-Plane System Design:
-  1. **Control Plane (Completed):** Human speed. Parses layered YAML policies, enforces field-level locking rules, validates latency budgets, computes deterministic SHA-256 policy hashes, and compiles immutable `bundle.json` files.
+  1. **Control Plane (Completed):** Human speed. Parses layered YAML policies, enforces field-level locking rules, validates structural coherence, computes deterministic SHA-256 policy hashes, and compiles immutable `bundle.json` files.
   2. **Data Plane (Next Up):** Millisecond latency. Gateway pipeline wrapping upstream LLMs (BYOK) with a tiered checking cascade ($T0 \rightarrow T1 \rightarrow \text{optional } T2$), semantic caching, stream monitoring, risk fusion, and telemetry logging.
   3. **Learning Plane (Planned):** Offline/Asynchronous. Cryptographic hash-chained audit ledger, offline shadow evaluation (false-negative estimation), calibration sweep tradeoff curves, and reviewer queue.
 
@@ -15,13 +15,13 @@
 
 ### A. Policy Hierarchy (`policies/`)
 * **`policies/org_baseline.yaml`**: Enterprise baseline rules. Locks `pii_threshold: 0.8` and `grounding_threshold: 0.6` in `locked_fields`.
-* **`policies/customer_support.yaml`**: Profile A (High throughput bot). Latency budget $200\text{ ms}$, `t2_enabled: false`, `pii_mode: redact-and-proceed`, `fail_mode: fail_open`.
-* **`policies/decision_support.yaml`**: Profile B (Regulated tool). Latency budget $800\text{ ms}$, `t2_enabled: true`, `pii_mode: block-and-explain`, `fail_mode: fail_closed`, strict `pii_threshold: 0.5`.
-* **`policies/internal_copilot.yaml`**: Profile C (Employee assistant). Latency budget $400\text{ ms}$, `pii_mode: warn-and-confirm`, `fail_mode: fail_open`.
+* **`policies/customer_support.yaml`**: Profile A (High throughput bot). `t2_enabled: false`, `pii_mode: redact-and-proceed`, `fail_mode: fail_open`.
+* **`policies/decision_support.yaml`**: Profile B (Regulated tool). `t2_enabled: true`, `pii_mode: block-and-explain`, `fail_mode: fail_closed`, strict `pii_threshold: 0.5`.
+* **`policies/internal_copilot.yaml`**: Profile C (Employee assistant). `pii_mode: warn-and-confirm`, `fail_mode: fail_open`.
 
 ### B. Control Plane Package (`control_plane/`)
-* **`control_plane/models.py`**: Built using **Pydantic v2** (`BaseModel`, `Field`). Defines `PolicyConfig`, `BundleConfig`, and custom exceptions (`PolicyLockingError`, `LatencyBudgetExceededError`).
-* **`control_plane/resolver.py`**: 2-Tier policy inheritance engine. Implements **Strict Exception Field Locking** (attempting to loosen a locked field raises `PolicyLockingError`; setting a stricter value is allowed). Validates cumulative detector latency ($T0 \approx 5\text{ms}$, $T1 \approx 40\text{ms}$, $T2 \approx 600\text{ms}$) against `latency_budget_ms`.
+* **`control_plane/models.py`**: Built using **Pydantic v2** (`BaseModel`, `Field`). Defines `PolicyConfig`, `BundleConfig`, and `PolicyLockingError`.
+* **`control_plane/resolver.py`**: 2-Tier policy inheritance engine. Implements **Strict Exception Field Locking** (attempting to loosen a locked field raises `PolicyLockingError`; setting a stricter value is allowed). There is deliberately no latency budget — see `docs/NO_LATENCY_BUDGET.md`.
 * **`control_plane/compiler.py`**: CLI & programmatic API (`compile_bundle()`). Computes deterministic SHA-256 `policy_hash` over canonical JSON parameters and outputs compiled bundles to `bundles/<use_case>_bundle.json`.
 
 ### C. Compiled Bundles (`bundles/`)
@@ -50,7 +50,7 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
 * `test_compile_all_personas`: Compiles all 3 personas cleanly.
 * `test_strict_locking_exception`: Verifies `PolicyLockingError` when attempting to loosen a locked field (`pii_threshold: 0.9` vs baseline `0.8`).
 * `test_stricter_override_allowed`: Verifies that a stricter override (`pii_threshold: 0.5`) is allowed.
-* `test_latency_budget_exceeded`: Verifies `LatencyBudgetExceededError` when $200\text{ ms}$ budget cannot fit enabled T2 judge ($645\text{ ms}$ required).
+* `test_no_latency_budget_field_exists` / `test_fail_mode_is_locked_and_tightenable_only`: latency is no longer a policy lever, and `fail_mode` is set + locked at its loosest rung so tenants may only tighten. See `docs/NO_LATENCY_BUDGET.md`.
 * `test_hash_reproducibility`: Asserts identical parameters produce identical SHA-256 hashes.
 * `TestLockingDirection` (5 tests): Regression cover for **P1** — `grounding_threshold` is a similarity *floor*, so raising it is stricter; the lock was previously inverted. Also covers newly-locked `toxicity_threshold` and enum tightening.
 * `TestStructuralValidators` (4 tests): Rejects inverted risk bands, `detector_weights` not summing to $1.0$, and critical thresholds below the detection midpoint.
@@ -61,7 +61,7 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
   (`compile_bundle.md` Validation Check 3). `test_hash_reproducibility` could not catch
   this — it hashes two hand-written dicts inside one interpreter, and the defect only
   appears across processes.
-* **Test Status:** 69/69 tests passing (control plane 28, input gate 13, fusion 28).
+* **Test Status:** 70/70 tests passing (control plane 29, input gate 13, fusion 28).
 
 ---
 

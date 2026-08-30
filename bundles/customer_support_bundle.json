@@ -1,10 +1,9 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "0eed520eab87c0f339eae4d73ddb07007c34d3ec6917a76d92dfe782e139411d",
-  "compiled_at": "2026-08-30T07:08:50.466486+00:00",
+  "policy_hash": "fa3120d0f9bd4fa21c443b0fc46464251db25d9fa6f55ee559c33d75674517ca",
+  "compiled_at": "2026-08-30T08:07:57.491188+00:00",
   "description": "Optimized for fast response times and customer interaction.",
-  "latency_budget_ms": 200,
   "t2_enabled": false,
   "pii_mode": "redact-and-proceed",
   "fail_mode": "fail_open",
@@ -48,6 +47,7 @@
   "injection_evasion_penalty": 0.15,
   "input_risk_tightening": 0.5,
   "locked_fields": [
+    "fail_mode",
     "grounding_threshold",
     "high_band",
     "injection_action",
