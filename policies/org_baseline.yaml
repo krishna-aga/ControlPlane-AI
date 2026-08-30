@@ -67,6 +67,10 @@ injection_threshold: 0.7
 injection_action: flag
 injection_evasion_penalty: 0.15
 
+# A FLAGged input contracts the output risk bands by this fraction, scaled by the
+# injection score. This is what 'flag' actually does - see docs/RISK_FUSION.md
+input_risk_tightening: 0.5
+
 # Fields locked by enterprise compliance - inner layers can ONLY tighten these fields
 locked_fields:
   - pii_threshold
@@ -77,3 +81,4 @@ locked_fields:
   - injection_threshold
   - injection_action
   - injection_evasion_penalty
+  - input_risk_tightening

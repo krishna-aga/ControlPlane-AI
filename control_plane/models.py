@@ -83,6 +83,12 @@ class PolicyConfig(BaseModel):
     # evidence of intent, so the same phrase scores higher when it arrives disguised.
     # HIGHER is stricter.
     injection_evasion_penalty: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    # How far a FLAGged input contracts the output risk bands. At tightening=0.5 and
+    # injection_risk=1.0 the bands halve, so an output that would have been FLAGged
+    # resolves to BLOCK instead. This is the mechanism by which 'flag' does something:
+    # input risk tightens the output cascade rather than editing the prompt.
+    # HIGHER is stricter.
+    input_risk_tightening: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
     # Locked fields list
     locked_fields: List[str] = Field(default_factory=list)
@@ -144,5 +150,6 @@ class BundleConfig(BaseModel):
     injection_threshold: float = 0.7
     injection_action: Literal["allow", "flag", "block"] = "flag"
     injection_evasion_penalty: float = 0.15
+    input_risk_tightening: float = 0.5
 
     locked_fields: List[str] = Field(default_factory=list)

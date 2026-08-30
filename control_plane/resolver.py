@@ -43,6 +43,8 @@ HIGHER_IS_STRICTER = {
     "grounding_threshold",
     # A larger penalty adds more risk for a disguised prompt -> stricter.
     "injection_evasion_penalty",
+    # More contraction of the output bands after a flagged input -> stricter.
+    "input_risk_tightening",
 }
 
 # Booleans, by which value is the safer one.
@@ -203,6 +205,7 @@ def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:
         "injection_threshold": 0.7,
         "injection_action": "flag",
         "injection_evasion_penalty": 0.15,
+        "input_risk_tightening": 0.5,
         "locked_fields": [],
     }
     for k, v in defaults.items():

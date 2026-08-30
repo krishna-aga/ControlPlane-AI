@@ -1,6 +1,8 @@
 # Policy Locking & Risk Normalization — Defect Register and Fix Specification
 
-**Status:** Specified, not implemented. No code changes have been made.
+**Status:** Partly implemented — see the Status column, which is authoritative.
+Control Plane fixes landed in `a8d5103`; Part B landed with `data_plane/fusion.py`.
+Part C (Tier 0) is untouched because the output cascade does not exist yet.
 **Scope:** `control_plane/resolver.py`, `control_plane/models.py`, `policies/org_baseline.yaml`, and the Data Plane risk-normalization contract consumed by the fusion engine.
 
 This document captures a design review of the policy locking model and the detector score normalization formula. Every claim below was verified against the actual repository code and policy files; verification output is reproduced in §4.
@@ -11,14 +13,14 @@ This document captures a design review of the policy locking model and the detec
 
 | # | Defect | Severity | Status |
 | :--- | :--- | :--- | :--- |
-| **P1** | `grounding_threshold` locking direction is **inverted** | **Live bug in shipped code** | Open |
-| **P2** | `toxicity_threshold`, `low_band`, `high_band` are not locked | Policy hole | Open |
-| **P3** | Locked enums are **immutable** rather than tightenable | Latent bug | Open |
-| **P4** | `detector_weights` unlocked, and not lockable by the current comparison | Policy hole | Open |
-| **P5** | No validator for band ordering or weight-sum integrity | Missing validation | Open |
-| **N1** | `min(1, P/T)` **saturates**, destroying severity ordering | Design defect | Open |
-| **N2** | Critical thresholds have no coherent scale across detectors | Design defect | Open |
-| **N3** | spaCy emits no confidence; NER sub-score collapses to binary | Design gap | Open |
+| **P1** | `grounding_threshold` locking direction is **inverted** | **Live bug in shipped code** | **Fixed** (`a8d5103`) |
+| **P2** | `toxicity_threshold`, `low_band`, `high_band` are not locked | Policy hole | **Fixed** (`a8d5103`) |
+| **P3** | Locked enums are **immutable** rather than tightenable | Latent bug | **Fixed** (`a8d5103`) |
+| **P4** | `detector_weights` unlocked, and not lockable by the current comparison | Policy hole | **Partial** — (a) critical floors implemented in `fusion.py`; (b) weight floors and (c) map-aware locking **still open** |
+| **P5** | No validator for band ordering or weight-sum integrity | Missing validation | **Fixed** (`a8d5103`) |
+| **N1** | `min(1, P/T)` **saturates**, destroying severity ordering | Design defect | **Fixed** — `fusion.normalize()`, raw scores in `ledger_row()` |
+| **N2** | Critical thresholds have no coherent scale across detectors | Design defect | **Fixed** — normalized S scale + `_validate_critical_coherence` |
+| **N3** | spaCy emits no confidence; NER sub-score collapses to binary | Design gap | **Partial** — `ner_label_confidence` in the bundle, but T1 NER is not built |
 | **T0-1** | Track 2 secrets are heuristic inside a tier defined as deterministic, yet unconditionally `BLOCK` | **Architectural** | Open |
 | **T0-2** | No severity→score mapping; T0 scores share no scale with T1 | Contract gap | Open |
 | **T0-3** | `pii_mode` action and fused-risk action can disagree, no precedence rule | Contract gap | Open |
@@ -27,6 +29,17 @@ This document captures a design review of the policy locking model and the detec
 | **T0-6** | Blocklist latency does not hold at realistic list sizes | Performance | Open |
 | **T0-7** | Hard-override short-circuit makes T0's own accuracy unmeasurable | Observability | Open |
 | **T0-8** | Canary matching is defeated by transformed exfiltration | Accepted limitation | Document |
+
+> **Two defects found after this register was written, recorded elsewhere:**
+> the `policy_hash` was non-reproducible across processes (`list(set(...))` on
+> `locked_fields`; fixed in `e574830`), and the Input Gate carried three defects of its
+> own — see [`INPUT_GATE.md`](INPUT_GATE.md). Fusion is documented in
+> [`RISK_FUSION.md`](RISK_FUSION.md).
+>
+> **Still open and load-bearing:** `detector_critical_thresholds` is not in
+> `locked_fields` and map-aware locking (P4c) is unimplemented, so a tenant can raise
+> every critical value to 1.0 — disabling the floors §P4 calls mandatory — or drop a key
+> and silently remove one detector's floor.
 
 P1–P5 are Control Plane. N1–N3 are the Data Plane normalization contract. T0-1–T0-8 are Tier 0 contract defects against [`t0_deterministic_checks.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/t0_deterministic_checks.md).
 

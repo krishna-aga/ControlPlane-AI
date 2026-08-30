@@ -114,3 +114,65 @@ class InputGateResult(BaseModel):
             "policy_hash": self.policy_hash,
             "latency_ms": round(self.latency_ms, 3),
         }
+
+
+class DetectorSignals(BaseModel):
+    """
+    Raw detector outputs, before normalization.
+
+    Raw values are carried explicitly because the ledger must persist them (N1a). A
+    calibration sweep asks "what would have happened at toxicity_threshold = 0.6?" - if
+    only normalized scores are stored, that counterfactual cannot be reconstructed
+    without re-running every detector over historical traffic.
+
+    Any field left None means the detector was NOT APPLICABLE for this request (no RAG
+    context, detector disabled). Fusion renormalizes the remaining weights rather than
+    scoring an absent detector as zero, which would silently dilute every other signal.
+    """
+
+    t0_severities: List[str] = Field(default_factory=list)   # "hard" | "high" | "medium" | "low"
+    pii_confidence: Optional[float] = None                   # max entity confidence
+    grounding_similarity: Optional[float] = None             # cosine; HIGHER is safer
+    toxicity_probability: Optional[float] = None             # P(toxic); higher is worse
+
+    injection_risk: float = 0.0                              # from the Input Gate
+    input_flagged: bool = False
+
+
+class FusionResult(BaseModel):
+    """Fused risk, the action it maps to, and the arithmetic that produced both."""
+
+    action: Literal["ALLOW", "REDACT", "REGENERATE", "FLAG", "BLOCK"]
+    fused_risk: float
+    reason: str
+
+    normalized: Dict[str, float] = Field(default_factory=dict)   # S per detector
+    raw: Dict[str, Optional[float]] = Field(default_factory=dict)
+    weights_applied: Dict[str, float] = Field(default_factory=dict)
+    contributions: Dict[str, float] = Field(default_factory=dict)
+
+    critical_fired: List[str] = Field(default_factory=list)
+    dominant_detector: Optional[str] = None
+
+    effective_low_band: float = 0.0
+    effective_high_band: float = 0.0
+    bands_tightened: bool = False
+    t2_recommended: bool = False
+
+    def ledger_row(self) -> Dict:
+        """Privacy-safe projection. Scores only - no output text, no entity values."""
+        return {
+            "action": self.action,
+            "fused_risk": round(self.fused_risk, 4),
+            "raw_scores": {k: v for k, v in self.raw.items() if v is not None},
+            "normalized_scores": {k: round(v, 4) for k, v in self.normalized.items()},
+            "weights_applied": {k: round(v, 4) for k, v in self.weights_applied.items()},
+            "critical_fired": self.critical_fired,
+            "dominant_detector": self.dominant_detector,
+            "effective_bands": [
+                round(self.effective_low_band, 4),
+                round(self.effective_high_band, 4),
+            ],
+            "bands_tightened": self.bands_tightened,
+            "t2_recommended": self.t2_recommended,
+        }
