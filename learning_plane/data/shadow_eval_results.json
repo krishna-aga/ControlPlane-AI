@@ -1,0 +1,5207 @@
+{
+  "sample_size": 200,
+  "flagged_count": 27,
+  "estimated_fnr": 0.135,
+  "rows": [
+    {
+      "request_id": "dee3378ccb7042de91a63cccaeae6af5",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-16T15:12:19.482881+00:00",
+      "fusion": {
+        "fused_risk": 0.1044,
+        "normalized_scores": {
+          "pii": 0.037,
+          "grounding": 0.0888,
+          "toxicity": 0.0279,
+          "t0": 0.1044
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0695,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "746807e4400a45978598d8d026043c66",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-16T15:54:12.283362+00:00",
+      "fusion": {
+        "fused_risk": 0.0821,
+        "normalized_scores": {
+          "pii": 0.0821,
+          "grounding": 0.0358,
+          "toxicity": 0.0749,
+          "t0": 0.0066
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0393,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "2adeff14c28d4740badb20d629702daa",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-16T17:59:57.188045+00:00",
+      "fusion": {
+        "fused_risk": 0.1709,
+        "normalized_scores": {
+          "pii": 0.1709,
+          "grounding": 0.1689,
+          "toxicity": 0.1661,
+          "t0": 0.0296
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1575,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "f8ef189f03304f45bd0ffb28514dcf8a",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-16T19:39:23.861806+00:00",
+      "fusion": {
+        "fused_risk": 0.0826,
+        "normalized_scores": {
+          "pii": 0.0296,
+          "grounding": 0.0541,
+          "toxicity": 0.0826,
+          "t0": 0.0401
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0833,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "13218492869145e0b0a7d1133e21ec30",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-16T23:29:01.163315+00:00",
+      "fusion": {
+        "fused_risk": 0.1449,
+        "normalized_scores": {
+          "pii": 0.0307,
+          "grounding": 0.0187,
+          "toxicity": 0.1125,
+          "t0": 0.1449
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1383,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8cdf0d6c8a904dd4af9c5fe52f5e3d93",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T00:37:25.151123+00:00",
+      "fusion": {
+        "fused_risk": 0.0549,
+        "normalized_scores": {
+          "pii": 0.0503,
+          "grounding": 0.0549,
+          "toxicity": 0.0041,
+          "t0": 0.005
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.4276,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "934d91c288854b0f8b4b80f29dccdada",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T00:48:46.723207+00:00",
+      "fusion": {
+        "fused_risk": 0.2838,
+        "normalized_scores": {
+          "pii": 0.2511,
+          "grounding": 0.0462,
+          "toxicity": 0.1895,
+          "t0": 0.2838
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.3165,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c73ab7663dd142929369e1346eddce67",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T03:42:15.102314+00:00",
+      "fusion": {
+        "fused_risk": 0.1349,
+        "normalized_scores": {
+          "pii": 0.071,
+          "grounding": 0.0738,
+          "toxicity": 0.0039,
+          "t0": 0.1349
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1072,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "aa39c4bfcbe34cd0bfaf632fb3ee91b4",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T04:51:18.150958+00:00",
+      "fusion": {
+        "fused_risk": 0.2854,
+        "normalized_scores": {
+          "pii": 0.1085,
+          "grounding": 0.2854,
+          "toxicity": 0.0881,
+          "t0": 0.2294
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.3302,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "63df2fe76c3b4275a7e60f7dbbbeeac6",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T07:25:30.952127+00:00",
+      "fusion": {
+        "fused_risk": 0.0263,
+        "normalized_scores": {
+          "pii": 0.0263,
+          "grounding": 0.0015,
+          "toxicity": 0.0133,
+          "t0": 0.001
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.016,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "d6b481eb491d48dbb224e613c142f9d0",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T08:24:51.310561+00:00",
+      "fusion": {
+        "fused_risk": 0.0937,
+        "normalized_scores": {
+          "pii": 0.0262,
+          "grounding": 0.0583,
+          "toxicity": 0.0937,
+          "t0": 0.0751
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0484,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "bb07ff0273cc45ceb1567b79514be4e8",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T08:36:52.404495+00:00",
+      "fusion": {
+        "fused_risk": 0.1867,
+        "normalized_scores": {
+          "pii": 0.1867,
+          "grounding": 0.1772,
+          "toxicity": 0.1701,
+          "t0": 0.1407
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1657,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "5c3cdc6d290746b7b9f3c978668bd592",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T09:45:31.325216+00:00",
+      "fusion": {
+        "fused_risk": 0.1859,
+        "normalized_scores": {
+          "pii": 0.1512,
+          "grounding": 0.0325,
+          "toxicity": 0.0575,
+          "t0": 0.1859
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1477,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "185f725a4a934641a851dbb849177bb7",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T10:30:03.679484+00:00",
+      "fusion": {
+        "fused_risk": 0.0837,
+        "normalized_scores": {
+          "pii": 0.0837,
+          "grounding": 0.0298,
+          "toxicity": 0.0336,
+          "t0": 0.033
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1153,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "fb5ac9cd4ab8430e8e717d065b45f10c",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T11:52:04.913319+00:00",
+      "fusion": {
+        "fused_risk": 0.2665,
+        "normalized_scores": {
+          "pii": 0.175,
+          "grounding": 0.1455,
+          "toxicity": 0.2368,
+          "t0": 0.2665
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2747,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0e16e6937b9244a78f9bf5b9b719a5c8",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T12:15:49.202359+00:00",
+      "fusion": {
+        "fused_risk": 0.0999,
+        "normalized_scores": {
+          "pii": 0.0644,
+          "grounding": 0.0999,
+          "toxicity": 0.0049,
+          "t0": 0.0926
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0871,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "221e0873d6cc4e79a0a187efa0a65555",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T13:56:44.614269+00:00",
+      "fusion": {
+        "fused_risk": 0.1153,
+        "normalized_scores": {
+          "pii": 0.1153,
+          "grounding": 0.0335,
+          "toxicity": 0.0721,
+          "t0": 0.0482
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0716,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "7de642cd37444747a8f3f3a7512c87f9",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T15:22:02.613743+00:00",
+      "fusion": {
+        "fused_risk": 0.2538,
+        "normalized_scores": {
+          "pii": 0.2538,
+          "grounding": 0.0594,
+          "toxicity": 0.1206,
+          "t0": 0.2428
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6553,
+        "judge_reason": "judge disagrees: pii risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "0674bc76991349b98e26e26bd13d7250",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T18:57:53.720713+00:00",
+      "fusion": {
+        "fused_risk": 0.1642,
+        "normalized_scores": {
+          "pii": 0.1642,
+          "grounding": 0.1068,
+          "toxicity": 0.1342,
+          "t0": 0.0131
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.157,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "6f612e5b6302416ab710cd82af88106c",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T20:12:27.977444+00:00",
+      "fusion": {
+        "fused_risk": 0.1002,
+        "normalized_scores": {
+          "pii": 0.1002,
+          "grounding": 0.0668,
+          "toxicity": 0.0459,
+          "t0": 0.0764
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1088,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "9a3c07124c3c4e88baafdec88c5714cb",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T21:24:17.533920+00:00",
+      "fusion": {
+        "fused_risk": 0.0785,
+        "normalized_scores": {
+          "pii": 0.043,
+          "grounding": 0.0785,
+          "toxicity": 0.0137,
+          "t0": 0.0436
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0585,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "9c223a7af33247d1ba45357c64336963",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T21:40:20.437497+00:00",
+      "fusion": {
+        "fused_risk": 0.0521,
+        "normalized_scores": {
+          "pii": 0.0281,
+          "grounding": 0.0521,
+          "toxicity": 0.0003,
+          "t0": 0.0438
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.072,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "b6b7b6bc34644ceebeb6b31af8737976",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-17T22:57:36.540827+00:00",
+      "fusion": {
+        "fused_risk": 0.1266,
+        "normalized_scores": {
+          "pii": 0.0731,
+          "grounding": 0.0462,
+          "toxicity": 0.0979,
+          "t0": 0.1266
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.134,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "68739e82346f4ee6a60f327597ff70ee",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T00:32:23.450432+00:00",
+      "fusion": {
+        "fused_risk": 0.0878,
+        "normalized_scores": {
+          "pii": 0.0444,
+          "grounding": 0.0177,
+          "toxicity": 0.0187,
+          "t0": 0.0878
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1253,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "12868019e5584cf7ababa41c34215684",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T00:55:42.743110+00:00",
+      "fusion": {
+        "fused_risk": 0.0755,
+        "normalized_scores": {
+          "pii": 0.0755,
+          "grounding": 0.0092,
+          "toxicity": 0.073,
+          "t0": 0.0067
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0543,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "07f8829420f44f1ea21869b94dcc80a9",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T01:00:20.744068+00:00",
+      "fusion": {
+        "fused_risk": 0.1895,
+        "normalized_scores": {
+          "pii": 0.1895,
+          "grounding": 0.0005,
+          "toxicity": 0.0673,
+          "t0": 0.0202
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1513,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "87739b861c9f4f4abf6dd62de71f59e8",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T01:05:31.899833+00:00",
+      "fusion": {
+        "fused_risk": 0.1622,
+        "normalized_scores": {
+          "pii": 0.1622,
+          "grounding": 0.0136,
+          "toxicity": 0.1389,
+          "t0": 0.0108
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1879,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "80f84c7d2e634dd6afe8caf68fa3e30d",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T01:56:32.514772+00:00",
+      "fusion": {
+        "fused_risk": 0.2182,
+        "normalized_scores": {
+          "pii": 0.0265,
+          "grounding": 0.0965,
+          "toxicity": 0.0158,
+          "t0": 0.2182
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2171,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "1f30cb7fac484848884c430640d06036",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T02:29:11.566917+00:00",
+      "fusion": {
+        "fused_risk": 0.1216,
+        "normalized_scores": {
+          "pii": 0.024,
+          "grounding": 0.0842,
+          "toxicity": 0.1216,
+          "t0": 0.0902
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1384,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "cdd5053f396f42949a5aa687d0c09c37",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T06:10:21.553240+00:00",
+      "fusion": {
+        "fused_risk": 0.0511,
+        "normalized_scores": {
+          "pii": 0.0241,
+          "grounding": 0.0271,
+          "toxicity": 0.0003,
+          "t0": 0.0511
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0584,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8fb3b16ebe79431882f9bce5187d9ca0",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T14:28:21.242074+00:00",
+      "fusion": {
+        "fused_risk": 0.0523,
+        "normalized_scores": {
+          "pii": 0.0523,
+          "grounding": 0.008,
+          "toxicity": 0.0508,
+          "t0": 0.0057
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0337,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "d99890500c864816ac52a2e27ca7b878",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-18T19:35:25.434019+00:00",
+      "fusion": {
+        "fused_risk": 0.2576,
+        "normalized_scores": {
+          "pii": 0.0309,
+          "grounding": 0.2386,
+          "toxicity": 0.1837,
+          "t0": 0.2576
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.267,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c6e29665a39f42f7bdcb590e79272c0d",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T00:41:15.991089+00:00",
+      "fusion": {
+        "fused_risk": 0.0574,
+        "normalized_scores": {
+          "pii": 0.0574,
+          "grounding": 0.0455,
+          "toxicity": 0.0371,
+          "t0": 0.0169
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.053,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "4c195311497f419a8aae3f539557a8b1",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T02:56:53.364074+00:00",
+      "fusion": {
+        "fused_risk": 0.0495,
+        "normalized_scores": {
+          "pii": 0.0176,
+          "grounding": 0.0014,
+          "toxicity": 0.0014,
+          "t0": 0.0495
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.094,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "597e6839efaf4424a6eb5e1af597bf7d",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T10:41:36.791458+00:00",
+      "fusion": {
+        "fused_risk": 0.0282,
+        "normalized_scores": {
+          "pii": 0.0282,
+          "grounding": 0.0187,
+          "toxicity": 0.0044,
+          "t0": 0.0151
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0446,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "765f4950d13d4b829ca6291a1287e95c",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T10:49:32.611502+00:00",
+      "fusion": {
+        "fused_risk": 0.0765,
+        "normalized_scores": {
+          "pii": 0.0084,
+          "grounding": 0.0765,
+          "toxicity": 0.0215,
+          "t0": 0.0677
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6019,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "45fcf0c2acd7453e9c7d9933f11d7f26",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T12:32:08.194104+00:00",
+      "fusion": {
+        "fused_risk": 0.1259,
+        "normalized_scores": {
+          "pii": 0.1168,
+          "grounding": 0.1259,
+          "toxicity": 0.101,
+          "t0": 0.093
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1752,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "dadcdfab55594ae1aaa87c9d75c01ed3",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T13:14:38.864807+00:00",
+      "fusion": {
+        "fused_risk": 0.1477,
+        "normalized_scores": {
+          "pii": 0.0896,
+          "grounding": 0.1001,
+          "toxicity": 0.1477,
+          "t0": 0.0305
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1262,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "ce97ecb752864033b26e031820f6df99",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T14:06:00.312984+00:00",
+      "fusion": {
+        "fused_risk": 0.0238,
+        "normalized_scores": {
+          "pii": 0.0217,
+          "grounding": 0.0224,
+          "toxicity": 0.0131,
+          "t0": 0.0238
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0407,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "d588a94c1d944339bce3a3375dc21305",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T15:53:06.971165+00:00",
+      "fusion": {
+        "fused_risk": 0.199,
+        "normalized_scores": {
+          "pii": 0.1742,
+          "grounding": 0.1452,
+          "toxicity": 0.0573,
+          "t0": 0.199
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6644,
+        "judge_reason": "judge disagrees: t0 risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "9f4b9bf52fec4ecaba824c3d07f7445b",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T16:28:15.857658+00:00",
+      "fusion": {
+        "fused_risk": 0.0601,
+        "normalized_scores": {
+          "pii": 0.0256,
+          "grounding": 0.0601,
+          "toxicity": 0.0269,
+          "t0": 0.0263
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.4394,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "65e3d2e0473d424a81723169b9b3e1f8",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T18:14:38.666356+00:00",
+      "fusion": {
+        "fused_risk": 0.0626,
+        "normalized_scores": {
+          "pii": 0.0288,
+          "grounding": 0.0491,
+          "toxicity": 0.0626,
+          "t0": 0.032
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0894,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "da0e94ac9cc347a6bed7163c7edb6ba5",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T20:08:20.351156+00:00",
+      "fusion": {
+        "fused_risk": 0.0914,
+        "normalized_scores": {
+          "pii": 0.0894,
+          "grounding": 0.0856,
+          "toxicity": 0.0914,
+          "t0": 0.0419
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0662,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "04c9701ca4914b0f9445dbc7c8f0a153",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T21:48:54.731236+00:00",
+      "fusion": {
+        "fused_risk": 0.0206,
+        "normalized_scores": {
+          "pii": 0.002,
+          "grounding": 0.0143,
+          "toxicity": 0.017,
+          "t0": 0.0206
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0577,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "fea6ccd79d0d4d1bb0a1162b0991d378",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-19T23:10:19.168465+00:00",
+      "fusion": {
+        "fused_risk": 0.2436,
+        "normalized_scores": {
+          "pii": 0.2436,
+          "grounding": 0.0636,
+          "toxicity": 0.0893,
+          "t0": 0.0407
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.7059,
+        "judge_reason": "judge disagrees: pii risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "fc6731e73f8c45c4a984c87edac3a38f",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T00:56:18.385088+00:00",
+      "fusion": {
+        "fused_risk": 0.1684,
+        "normalized_scores": {
+          "pii": 0.1684,
+          "grounding": 0.0917,
+          "toxicity": 0.0271,
+          "t0": 0.0718
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2067,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "51b02dccdec64c549ece7b6db41749d5",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T05:19:32.228137+00:00",
+      "fusion": {
+        "fused_risk": 0.0842,
+        "normalized_scores": {
+          "pii": 0.0065,
+          "grounding": 0.0767,
+          "toxicity": 0.0242,
+          "t0": 0.0842
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1206,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "ab09f58cc2164db6b11537c196a160d8",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T05:51:33.320712+00:00",
+      "fusion": {
+        "fused_risk": 0.1915,
+        "normalized_scores": {
+          "pii": 0.1343,
+          "grounding": 0.1125,
+          "toxicity": 0.1239,
+          "t0": 0.1915
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.183,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "4cc04679ff974608aef5ec115642ce4a",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T05:55:02.531741+00:00",
+      "fusion": {
+        "fused_risk": 0.1922,
+        "normalized_scores": {
+          "pii": 0.0453,
+          "grounding": 0.1922,
+          "toxicity": 0.1744,
+          "t0": 0.0362
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2306,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "557dd0c8c8be4ecaa7770220607ea934",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T07:42:46.225065+00:00",
+      "fusion": {
+        "fused_risk": 0.1411,
+        "normalized_scores": {
+          "pii": 0.0269,
+          "grounding": 0.0921,
+          "toxicity": 0.1411,
+          "t0": 0.066
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1062,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "b36da884426949e99ca17cb7efd900f6",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T07:52:45.361762+00:00",
+      "fusion": {
+        "fused_risk": 0.1259,
+        "normalized_scores": {
+          "pii": 0.0515,
+          "grounding": 0.0468,
+          "toxicity": 0.1259,
+          "t0": 0.0098
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0991,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "13840678a7bd4220a5aefc68113dd376",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T11:14:32.074764+00:00",
+      "fusion": {
+        "fused_risk": 0.1206,
+        "normalized_scores": {
+          "pii": 0.082,
+          "grounding": 0.1206,
+          "toxicity": 0.0547,
+          "t0": 0.0377
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1191,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "eda9c68ea9c94d198de9b156d182c980",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T11:45:37.664869+00:00",
+      "fusion": {
+        "fused_risk": 0.0569,
+        "normalized_scores": {
+          "pii": 0.0025,
+          "grounding": 0.0569,
+          "toxicity": 0.0508,
+          "t0": 0.0357
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0332,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "adba7108d6b849dc91ebab428c5c450b",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T14:09:16.335036+00:00",
+      "fusion": {
+        "fused_risk": 0.1149,
+        "normalized_scores": {
+          "pii": 0.1149,
+          "grounding": 0.0641,
+          "toxicity": 0.0572,
+          "t0": 0.0769
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.5696,
+        "judge_reason": "judge disagrees: pii risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "183426b0e381448393a5803a2c20251b",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T14:46:55.650880+00:00",
+      "fusion": {
+        "fused_risk": 0.232,
+        "normalized_scores": {
+          "pii": 0.1591,
+          "grounding": 0.2128,
+          "toxicity": 0.2255,
+          "t0": 0.232
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2386,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "085040d66c5b47a182b081ade21bfa44",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T16:11:50.015938+00:00",
+      "fusion": {
+        "fused_risk": 0.0283,
+        "normalized_scores": {
+          "pii": 0.0247,
+          "grounding": 0.0283,
+          "toxicity": 0.0114,
+          "t0": 0.0075
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0473,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c0853eb397604dc7a91043417e4b0db9",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T17:08:32.797669+00:00",
+      "fusion": {
+        "fused_risk": 0.0482,
+        "normalized_scores": {
+          "pii": 0.0482,
+          "grounding": 0.0138,
+          "toxicity": 0.021,
+          "t0": 0.0252
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.06,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "f6e5c4286ebb4960abbf645b5cef297a",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T18:21:14.832542+00:00",
+      "fusion": {
+        "fused_risk": 0.1383,
+        "normalized_scores": {
+          "pii": 0.1383,
+          "grounding": 0.0808,
+          "toxicity": 0.1235,
+          "t0": 0.0944
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0937,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "714f202216da4742808e503710ffee7b",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T18:22:14.801355+00:00",
+      "fusion": {
+        "fused_risk": 0.1363,
+        "normalized_scores": {
+          "pii": 0.1363,
+          "grounding": 0.0054,
+          "toxicity": 0.1066,
+          "t0": 0.0317
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1643,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "6471b41fbf914a26bcb51f123d2f78ec",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T18:29:22.436255+00:00",
+      "fusion": {
+        "fused_risk": 0.0515,
+        "normalized_scores": {
+          "pii": 0.0367,
+          "grounding": 0.0324,
+          "toxicity": 0.0129,
+          "t0": 0.0515
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0813,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "75e8ebd5860447d0bf5e1b4a75a0cdd5",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T19:42:48.349783+00:00",
+      "fusion": {
+        "fused_risk": 0.0285,
+        "normalized_scores": {
+          "pii": 0.0057,
+          "grounding": 0.0272,
+          "toxicity": 0.0285,
+          "t0": 0.0189
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0184,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0bd01081fe484942a54b7f5c7d1e6ca7",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T20:05:25.721185+00:00",
+      "fusion": {
+        "fused_risk": 0.0586,
+        "normalized_scores": {
+          "pii": 0.022,
+          "grounding": 0.0245,
+          "toxicity": 0.0563,
+          "t0": 0.0586
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.072,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "9ca7bda7b73c4608a17749eceda8fc03",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T22:49:36.488829+00:00",
+      "fusion": {
+        "fused_risk": 0.0646,
+        "normalized_scores": {
+          "pii": 0.0261,
+          "grounding": 0.0646,
+          "toxicity": 0.0035,
+          "t0": 0.0084
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.4314,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "890e8edb662849fcbb0586b33a624f3d",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-20T23:22:01.258147+00:00",
+      "fusion": {
+        "fused_risk": 0.0487,
+        "normalized_scores": {
+          "pii": 0.0297,
+          "grounding": 0.0123,
+          "toxicity": 0.0487,
+          "t0": 0.0299
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0149,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "763270a08b274369a7ce92c97ba8495a",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T00:30:47.079685+00:00",
+      "fusion": {
+        "fused_risk": 0.05,
+        "normalized_scores": {
+          "pii": 0.05,
+          "grounding": 0.0116,
+          "toxicity": 0.0117,
+          "t0": 0.0242
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0053,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "5c48ffc503ac4696af30b5a1b205b948",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T02:28:35.498266+00:00",
+      "fusion": {
+        "fused_risk": 0.2637,
+        "normalized_scores": {
+          "pii": 0.2515,
+          "grounding": 0.0433,
+          "toxicity": 0.2637,
+          "t0": 0.1258
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6515,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "2fed417ae08a4f528fd415c001c80f75",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T04:22:30.883905+00:00",
+      "fusion": {
+        "fused_risk": 0.1754,
+        "normalized_scores": {
+          "pii": 0.0411,
+          "grounding": 0.0244,
+          "toxicity": 0.0865,
+          "t0": 0.1754
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6163,
+        "judge_reason": "judge disagrees: t0 risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "2aebb757b7b04d1196638ecd143332e0",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T06:39:34.529151+00:00",
+      "fusion": {
+        "fused_risk": 0.0686,
+        "normalized_scores": {
+          "pii": 0.0304,
+          "grounding": 0.0075,
+          "toxicity": 0.0686,
+          "t0": 0.0055
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6372,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "1c58342a5bf344239fdae442d7079921",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T06:55:54.559155+00:00",
+      "fusion": {
+        "fused_risk": 0.0748,
+        "normalized_scores": {
+          "pii": 0.0748,
+          "grounding": 0.049,
+          "toxicity": 0.0276,
+          "t0": 0.0615
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0397,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "a8910e48d38148639d92fbfc030f577b",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T07:18:59.337559+00:00",
+      "fusion": {
+        "fused_risk": 0.0872,
+        "normalized_scores": {
+          "pii": 0.0464,
+          "grounding": 0.0872,
+          "toxicity": 0.0016,
+          "t0": 0.0384
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0719,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "59fbf89e7f9a4e01aaf45fe7692f0451",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T08:23:00.230057+00:00",
+      "fusion": {
+        "fused_risk": 0.2558,
+        "normalized_scores": {
+          "pii": 0.207,
+          "grounding": 0.2164,
+          "toxicity": 0.2558,
+          "t0": 0.1935
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2181,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "14e448e66d2042e49b9e9def92028f9e",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T09:29:09.675306+00:00",
+      "fusion": {
+        "fused_risk": 0.2609,
+        "normalized_scores": {
+          "pii": 0.2609,
+          "grounding": 0.0234,
+          "toxicity": 0.1042,
+          "t0": 0.0109
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.3102,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c43bb2e983d941caa57cc4e723c059c9",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T09:50:21.457809+00:00",
+      "fusion": {
+        "fused_risk": 0.0794,
+        "normalized_scores": {
+          "pii": 0.0316,
+          "grounding": 0.0313,
+          "toxicity": 0.0382,
+          "t0": 0.0794
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0778,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "1e3a45303a5e45de8f2c916f9d101665",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T11:37:02.411883+00:00",
+      "fusion": {
+        "fused_risk": 0.1414,
+        "normalized_scores": {
+          "pii": 0.1395,
+          "grounding": 0.0275,
+          "toxicity": 0.1236,
+          "t0": 0.1414
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1016,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0cd9f3d9f96a423f803eb5ce75896fa4",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T13:01:05.105225+00:00",
+      "fusion": {
+        "fused_risk": 0.0366,
+        "normalized_scores": {
+          "pii": 0.0193,
+          "grounding": 0.016,
+          "toxicity": 0.0366,
+          "t0": 0.0036
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0131,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "187be0d52aa14a698ee5bcd97c077b06",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T13:53:49.390965+00:00",
+      "fusion": {
+        "fused_risk": 0.1654,
+        "normalized_scores": {
+          "pii": 0.1587,
+          "grounding": 0.0623,
+          "toxicity": 0.1654,
+          "t0": 0.0084
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1315,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "1f94bd6da2b9485fb998e29b2877673b",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T13:56:22.797298+00:00",
+      "fusion": {
+        "fused_risk": 0.1792,
+        "normalized_scores": {
+          "pii": 0.1168,
+          "grounding": 0.1242,
+          "toxicity": 0.1792,
+          "t0": 0.0239
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.7669,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "0cb17db52cfc4f7e811da1fc1e83ddb1",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T15:43:20.550413+00:00",
+      "fusion": {
+        "fused_risk": 0.0655,
+        "normalized_scores": {
+          "pii": 0.0655,
+          "grounding": 0.0093,
+          "toxicity": 0.0134,
+          "t0": 0.0167
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0302,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "ac6ee339c6b34357993a053c9e4defb5",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T15:46:29.370085+00:00",
+      "fusion": {
+        "fused_risk": 0.0671,
+        "normalized_scores": {
+          "pii": 0.0573,
+          "grounding": 0.0038,
+          "toxicity": 0.0671,
+          "t0": 0.0608
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0198,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c6162c92df08470fa5dbf922670e04cd",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T17:18:23.612045+00:00",
+      "fusion": {
+        "fused_risk": 0.0403,
+        "normalized_scores": {
+          "pii": 0.0403,
+          "grounding": 0.0209,
+          "toxicity": 0.0008,
+          "t0": 0.0014
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0882,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "2314f2a78dd049d0998cdfd5c2df976e",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T18:18:11.581477+00:00",
+      "fusion": {
+        "fused_risk": 0.1237,
+        "normalized_scores": {
+          "pii": 0.0465,
+          "grounding": 0.0456,
+          "toxicity": 0.1237,
+          "t0": 0.0409
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1433,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "9e60b99931d04f778f7304e410c28c29",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T19:29:45.367595+00:00",
+      "fusion": {
+        "fused_risk": 0.0836,
+        "normalized_scores": {
+          "pii": 0.0836,
+          "grounding": 0.0059,
+          "toxicity": 0.078,
+          "t0": 0.0751
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0703,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "bed9957c35394875a1694237dfd04853",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T19:45:26.611216+00:00",
+      "fusion": {
+        "fused_risk": 0.076,
+        "normalized_scores": {
+          "pii": 0.076,
+          "grounding": 0.0639,
+          "toxicity": 0.0662,
+          "t0": 0.051
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1032,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8b01e2d9ac0a4b35956ee87ba5b94f62",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T21:28:22.038746+00:00",
+      "fusion": {
+        "fused_risk": 0.0408,
+        "normalized_scores": {
+          "pii": 0.0253,
+          "grounding": 0.0408,
+          "toxicity": 0.008,
+          "t0": 0.0193
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0687,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "6b74f66fc38049d8bb2a0e7fdd4ba686",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-21T23:41:32.299025+00:00",
+      "fusion": {
+        "fused_risk": 0.187,
+        "normalized_scores": {
+          "pii": 0.0278,
+          "grounding": 0.0472,
+          "toxicity": 0.065,
+          "t0": 0.187
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1593,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8712c906a6f74a609ad81c3eb297104d",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T01:26:01.201044+00:00",
+      "fusion": {
+        "fused_risk": 0.0395,
+        "normalized_scores": {
+          "pii": 0.0187,
+          "grounding": 0.0395,
+          "toxicity": 0.022,
+          "t0": 0.0129
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.088,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "2d0595142ac84eec83c4be725833275c",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T04:43:06.523289+00:00",
+      "fusion": {
+        "fused_risk": 0.0259,
+        "normalized_scores": {
+          "pii": 0.0041,
+          "grounding": 0.0259,
+          "toxicity": 0.0068,
+          "t0": 0.0249
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0565,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "3b619cfaed3d48b0888202c5271714ab",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T06:22:12.541074+00:00",
+      "fusion": {
+        "fused_risk": 0.1057,
+        "normalized_scores": {
+          "pii": 0.0503,
+          "grounding": 0.1057,
+          "toxicity": 0.0108,
+          "t0": 0.0681
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1297,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "b804fc4349ee4e39ac0050d3026d99b3",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T08:52:53.555980+00:00",
+      "fusion": {
+        "fused_risk": 0.21,
+        "normalized_scores": {
+          "pii": 0.21,
+          "grounding": 0.0746,
+          "toxicity": 0.0132,
+          "t0": 0.0836
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2118,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "440116381153467abb483d4287a5d674",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T12:00:05.165672+00:00",
+      "fusion": {
+        "fused_risk": 0.1469,
+        "normalized_scores": {
+          "pii": 0.1469,
+          "grounding": 0.0196,
+          "toxicity": 0.0616,
+          "t0": 0.0794
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0998,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "d8a3001550d64b09b4dddf7d40494aa2",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T13:01:45.201448+00:00",
+      "fusion": {
+        "fused_risk": 0.0341,
+        "normalized_scores": {
+          "pii": 0.0341,
+          "grounding": 0.0314,
+          "toxicity": 0.0208,
+          "t0": 0.0224
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.012,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "3b83f0b2d0924dacaf6b7358f6c187d1",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T17:02:30.958703+00:00",
+      "fusion": {
+        "fused_risk": 0.1993,
+        "normalized_scores": {
+          "pii": 0.0068,
+          "grounding": 0.0041,
+          "toxicity": 0.1129,
+          "t0": 0.1993
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2186,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "30a12efd6b6841738315d6a590679cd1",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T19:51:09.845554+00:00",
+      "fusion": {
+        "fused_risk": 0.0802,
+        "normalized_scores": {
+          "pii": 0.0464,
+          "grounding": 0.0101,
+          "toxicity": 0.0802,
+          "t0": 0.071
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0749,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c7b8c3101d374367a5028b7af599f29f",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-22T20:35:16.605460+00:00",
+      "fusion": {
+        "fused_risk": 0.1383,
+        "normalized_scores": {
+          "pii": 0.1383,
+          "grounding": 0.1282,
+          "toxicity": 0.102,
+          "t0": 0.0237
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1871,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0e0ed1ba52e547cda662ab4ac92d4399",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T02:26:45.673517+00:00",
+      "fusion": {
+        "fused_risk": 0.0592,
+        "normalized_scores": {
+          "pii": 0.0121,
+          "grounding": 0.0592,
+          "toxicity": 0.0281,
+          "t0": 0.008
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0457,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "073297f5947042738143a490f7af90c3",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T02:57:25.128313+00:00",
+      "fusion": {
+        "fused_risk": 0.0629,
+        "normalized_scores": {
+          "pii": 0.0386,
+          "grounding": 0.0629,
+          "toxicity": 0.0477,
+          "t0": 0.0123
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0356,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "da0e81ee750c46b290f3a80344ab87e6",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T03:35:02.293333+00:00",
+      "fusion": {
+        "fused_risk": 0.1209,
+        "normalized_scores": {
+          "pii": 0.1209,
+          "grounding": 0.0335,
+          "toxicity": 0.0934,
+          "t0": 0.0614
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0913,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "12f527be9ddc4bda989c7518df35f718",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T03:36:37.288682+00:00",
+      "fusion": {
+        "fused_risk": 0.0957,
+        "normalized_scores": {
+          "pii": 0.0957,
+          "grounding": 0.0069,
+          "toxicity": 0.028,
+          "t0": 0.0582
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1357,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "6e6e955727dd478ab62b978f5dbce530",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T05:41:50.281722+00:00",
+      "fusion": {
+        "fused_risk": 0.0705,
+        "normalized_scores": {
+          "pii": 0.0557,
+          "grounding": 0.0705,
+          "toxicity": 0.0379,
+          "t0": 0.0702
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0684,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "732bc570d955448ea93b6d553e2045b9",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T05:49:19.006414+00:00",
+      "fusion": {
+        "fused_risk": 0.0372,
+        "normalized_scores": {
+          "pii": 0.033,
+          "grounding": 0.0262,
+          "toxicity": 0.0372,
+          "t0": 0.0334
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0672,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "62656633d7684070a24e659015a6cf28",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T09:53:54.940369+00:00",
+      "fusion": {
+        "fused_risk": 0.2045,
+        "normalized_scores": {
+          "pii": 0.0862,
+          "grounding": 0.1967,
+          "toxicity": 0.0159,
+          "t0": 0.2045
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.7196,
+        "judge_reason": "judge disagrees: t0 risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "d35cfd82a1204a7dbe6bb74b80a7083c",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T11:10:03.207773+00:00",
+      "fusion": {
+        "fused_risk": 0.086,
+        "normalized_scores": {
+          "pii": 0.0601,
+          "grounding": 0.086,
+          "toxicity": 0.081,
+          "t0": 0.0223
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1142,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "39d2ac36ff864da5a375743c4c850373",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T11:19:10.847552+00:00",
+      "fusion": {
+        "fused_risk": 0.2581,
+        "normalized_scores": {
+          "pii": 0.1867,
+          "grounding": 0.2581,
+          "toxicity": 0.1866,
+          "t0": 0.1556
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2559,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0910bd3c3eb04ab7a4db7477827af9f8",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T12:39:08.231158+00:00",
+      "fusion": {
+        "fused_risk": 0.1004,
+        "normalized_scores": {
+          "pii": 0.1004,
+          "grounding": 0.0031,
+          "toxicity": 0.0521,
+          "t0": 0.0099
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1293,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "48c6a8909bc345eab9d1835b12319fcf",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T14:39:32.256489+00:00",
+      "fusion": {
+        "fused_risk": 0.1272,
+        "normalized_scores": {
+          "pii": 0.0732,
+          "grounding": 0.1168,
+          "toxicity": 0.0568,
+          "t0": 0.1272
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1573,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "aab2597de06a4bd4bac7dcb59f3e43d6",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T15:06:45.919031+00:00",
+      "fusion": {
+        "fused_risk": 0.121,
+        "normalized_scores": {
+          "pii": 0.0709,
+          "grounding": 0.0548,
+          "toxicity": 0.0363,
+          "t0": 0.121
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1106,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "bb1913baef3a49929811c122965db1fd",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T15:19:51.875570+00:00",
+      "fusion": {
+        "fused_risk": 0.189,
+        "normalized_scores": {
+          "pii": 0.1721,
+          "grounding": 0.0107,
+          "toxicity": 0.1124,
+          "t0": 0.189
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2337,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "5ed913a48df2446394781a4d9fa32299",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T15:21:15.478714+00:00",
+      "fusion": {
+        "fused_risk": 0.2596,
+        "normalized_scores": {
+          "pii": 0.0599,
+          "grounding": 0.2596,
+          "toxicity": 0.1974,
+          "t0": 0.0766
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2266,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "2f718c7d0a7d4201a3d7ecd309a3d108",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T19:13:35.182975+00:00",
+      "fusion": {
+        "fused_risk": 0.0388,
+        "normalized_scores": {
+          "pii": 0.0279,
+          "grounding": 0.0388,
+          "toxicity": 0.0131,
+          "t0": 0.0334
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.4266,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "b39a0cd2e72c4324930c1edf453e1137",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T19:33:31.915318+00:00",
+      "fusion": {
+        "fused_risk": 0.0356,
+        "normalized_scores": {
+          "pii": 0.0027,
+          "grounding": 0.0356,
+          "toxicity": 0.0289,
+          "t0": 0.0196
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0663,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "f13f5f10eac44088a3018cb42e17ced3",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T21:05:27.789450+00:00",
+      "fusion": {
+        "fused_risk": 0.0871,
+        "normalized_scores": {
+          "pii": 0.0828,
+          "grounding": 0.0871,
+          "toxicity": 0.0128,
+          "t0": 0.0473
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6437,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "dbd375248fe948039fce735538c2db4c",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T22:03:39.199317+00:00",
+      "fusion": {
+        "fused_risk": 0.263,
+        "normalized_scores": {
+          "pii": 0.1372,
+          "grounding": 0.1079,
+          "toxicity": 0.263,
+          "t0": 0.0553
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2787,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "3d6cec6898b8469e93f53847f3874d85",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-23T22:23:15.858756+00:00",
+      "fusion": {
+        "fused_risk": 0.1293,
+        "normalized_scores": {
+          "pii": 0.0052,
+          "grounding": 0.038,
+          "toxicity": 0.1293,
+          "t0": 0.0245
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1342,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0d9f1989689847eba8db7f5ef9680378",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T05:26:24.441351+00:00",
+      "fusion": {
+        "fused_risk": 0.0919,
+        "normalized_scores": {
+          "pii": 0.0571,
+          "grounding": 0.004,
+          "toxicity": 0.0919,
+          "t0": 0.0862
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0433,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8dae2645a6f044cc834d4109cb94464a",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T05:52:20.327955+00:00",
+      "fusion": {
+        "fused_risk": 0.1737,
+        "normalized_scores": {
+          "pii": 0.1119,
+          "grounding": 0.1737,
+          "toxicity": 0.1548,
+          "t0": 0.1607
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1887,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "11c8255f66194a99a5e297c4985b1dd1",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T09:18:05.035238+00:00",
+      "fusion": {
+        "fused_risk": 0.2567,
+        "normalized_scores": {
+          "pii": 0.2567,
+          "grounding": 0.1325,
+          "toxicity": 0.0796,
+          "t0": 0.248
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.3001,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "92a83ebc410c4ce59c9bd600898809b6",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T09:54:50.772379+00:00",
+      "fusion": {
+        "fused_risk": 0.2031,
+        "normalized_scores": {
+          "pii": 0.104,
+          "grounding": 0.0131,
+          "toxicity": 0.2031,
+          "t0": 0.1601
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2403,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "90289e2058ae4bca892fe206e97f4036",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T12:55:00.101270+00:00",
+      "fusion": {
+        "fused_risk": 0.0641,
+        "normalized_scores": {
+          "pii": 0.0229,
+          "grounding": 0.0641,
+          "toxicity": 0.0235,
+          "t0": 0.0217
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0352,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "257f70c00f124cd78f26887bb4316b9f",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T15:31:22.281890+00:00",
+      "fusion": {
+        "fused_risk": 0.1934,
+        "normalized_scores": {
+          "pii": 0.0094,
+          "grounding": 0.147,
+          "toxicity": 0.1934,
+          "t0": 0.1488
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1727,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "22011a26d6cb42da92d2360fe26b2f87",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T17:15:51.502259+00:00",
+      "fusion": {
+        "fused_risk": 0.1108,
+        "normalized_scores": {
+          "pii": 0.0643,
+          "grounding": 0.0121,
+          "toxicity": 0.1108,
+          "t0": 0.0444
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1194,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c7748df328704ef9b7bfc54e7315afe8",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T17:24:07.858022+00:00",
+      "fusion": {
+        "fused_risk": 0.2316,
+        "normalized_scores": {
+          "pii": 0.2316,
+          "grounding": 0.0287,
+          "toxicity": 0.0517,
+          "t0": 0.1453
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2235,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "6f543f75fa054f068590dedd22f54ce4",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T17:50:58.464792+00:00",
+      "fusion": {
+        "fused_risk": 0.1076,
+        "normalized_scores": {
+          "pii": 0.1076,
+          "grounding": 0.0316,
+          "toxicity": 0.0301,
+          "t0": 0.0288
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1486,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "972668acf8a3422f8865571f69de4700",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T18:46:37.691820+00:00",
+      "fusion": {
+        "fused_risk": 0.2597,
+        "normalized_scores": {
+          "pii": 0.1674,
+          "grounding": 0.1015,
+          "toxicity": 0.2597,
+          "t0": 0.2446
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2555,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "2a7ee634410541e19384973b12c6d238",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T21:30:34.399673+00:00",
+      "fusion": {
+        "fused_risk": 0.0869,
+        "normalized_scores": {
+          "pii": 0.0609,
+          "grounding": 0.0078,
+          "toxicity": 0.005,
+          "t0": 0.0869
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1273,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "fb285cfc78d341c3950f2994bde1a3ea",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-24T23:23:34.790555+00:00",
+      "fusion": {
+        "fused_risk": 0.2066,
+        "normalized_scores": {
+          "pii": 0.0189,
+          "grounding": 0.0913,
+          "toxicity": 0.2066,
+          "t0": 0.0084
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2484,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "96c248d223344b71b679f1def4c17c98",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T00:49:43.109479+00:00",
+      "fusion": {
+        "fused_risk": 0.086,
+        "normalized_scores": {
+          "pii": 0.0559,
+          "grounding": 0.086,
+          "toxicity": 0.0399,
+          "t0": 0.0032
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0892,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "ce517c952e3446c896b57882da490c55",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T00:54:22.648684+00:00",
+      "fusion": {
+        "fused_risk": 0.1431,
+        "normalized_scores": {
+          "pii": 0.0243,
+          "grounding": 0.1431,
+          "toxicity": 0.0216,
+          "t0": 0.1295
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.095,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "99f0e7241cff4c6d957630ca58b2d76f",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T01:29:49.095496+00:00",
+      "fusion": {
+        "fused_risk": 0.2835,
+        "normalized_scores": {
+          "pii": 0.1149,
+          "grounding": 0.2062,
+          "toxicity": 0.118,
+          "t0": 0.2835
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2518,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "85038b95b90643339d42fddae6df7ae6",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T03:45:22.169554+00:00",
+      "fusion": {
+        "fused_risk": 0.1203,
+        "normalized_scores": {
+          "pii": 0.0971,
+          "grounding": 0.1203,
+          "toxicity": 0.0002,
+          "t0": 0.0316
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6701,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "514399f648514640aed97308af7b7284",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T12:49:19.013769+00:00",
+      "fusion": {
+        "fused_risk": 0.0227,
+        "normalized_scores": {
+          "pii": 0.0227,
+          "grounding": 0.0211,
+          "toxicity": 0.0075,
+          "t0": 0.0223
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.02,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "202d39c8388e4ae3a2aed3c30036f7cd",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T14:28:19.505420+00:00",
+      "fusion": {
+        "fused_risk": 0.0842,
+        "normalized_scores": {
+          "pii": 0.0647,
+          "grounding": 0.0842,
+          "toxicity": 0.0208,
+          "t0": 0.0329
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0898,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0adbb462b599412c86677ba83096c79f",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T17:15:13.095653+00:00",
+      "fusion": {
+        "fused_risk": 0.0539,
+        "normalized_scores": {
+          "pii": 0.0153,
+          "grounding": 0.0539,
+          "toxicity": 0.0377,
+          "t0": 0.0269
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0557,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "7a6e3f110a1349f39ae796d018dd0807",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T17:18:56.455954+00:00",
+      "fusion": {
+        "fused_risk": 0.1926,
+        "normalized_scores": {
+          "pii": 0.1926,
+          "grounding": 0.0974,
+          "toxicity": 0.1884,
+          "t0": 0.099
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.221,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "9e72fb8174e64b1a9954ee436f01ecd9",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T19:13:38.615436+00:00",
+      "fusion": {
+        "fused_risk": 0.092,
+        "normalized_scores": {
+          "pii": 0.0261,
+          "grounding": 0.092,
+          "toxicity": 0.0231,
+          "t0": 0.0049
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.5821,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "dc27322f7b80492dae0787f5c9a01b9a",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T19:37:36.883014+00:00",
+      "fusion": {
+        "fused_risk": 0.0846,
+        "normalized_scores": {
+          "pii": 0.0058,
+          "grounding": 0.0079,
+          "toxicity": 0.0228,
+          "t0": 0.0846
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0623,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "e4e07906e2714c16a7528e7cdeca0888",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T20:25:41.636707+00:00",
+      "fusion": {
+        "fused_risk": 0.1481,
+        "normalized_scores": {
+          "pii": 0.1481,
+          "grounding": 0.0967,
+          "toxicity": 0.1184,
+          "t0": 0.0126
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1489,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "6830348986634d4599186919caef7575",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T22:20:33.277098+00:00",
+      "fusion": {
+        "fused_risk": 0.1471,
+        "normalized_scores": {
+          "pii": 0.0884,
+          "grounding": 0.1471,
+          "toxicity": 0.063,
+          "t0": 0.1306
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1731,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "47f3a991094a4a91b2dfe11f2945adf7",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-25T22:43:36.767469+00:00",
+      "fusion": {
+        "fused_risk": 0.0589,
+        "normalized_scores": {
+          "pii": 0.0589,
+          "grounding": 0.0024,
+          "toxicity": 0.0426,
+          "t0": 0.0522
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0532,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "f3818b3b0ee2443d88ecf582eed86d60",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T01:12:02.293590+00:00",
+      "fusion": {
+        "fused_risk": 0.2747,
+        "normalized_scores": {
+          "pii": 0.098,
+          "grounding": 0.2747,
+          "toxicity": 0.1048,
+          "t0": 0.1304
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2753,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "7678ff2b30af4839a3f04e60dd4dcedc",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T04:54:35.167265+00:00",
+      "fusion": {
+        "fused_risk": 0.1445,
+        "normalized_scores": {
+          "pii": 0.088,
+          "grounding": 0.0457,
+          "toxicity": 0.1371,
+          "t0": 0.1445
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1638,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "20b482d21d9448dfae6550e8ef1804e7",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T06:15:29.277886+00:00",
+      "fusion": {
+        "fused_risk": 0.0435,
+        "normalized_scores": {
+          "pii": 0.0162,
+          "grounding": 0.0435,
+          "toxicity": 0.0027,
+          "t0": 0.0026
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0468,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "9e0b5ada5690415aad1f3d7a56d7933c",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T06:37:20.479670+00:00",
+      "fusion": {
+        "fused_risk": 0.2248,
+        "normalized_scores": {
+          "pii": 0.0182,
+          "grounding": 0.0512,
+          "toxicity": 0.0954,
+          "t0": 0.2248
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.269,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "d7efef357b0840329406ef139cb89ebc",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T09:13:37.018803+00:00",
+      "fusion": {
+        "fused_risk": 0.031,
+        "normalized_scores": {
+          "pii": 0.0204,
+          "grounding": 0.031,
+          "toxicity": 0.0273,
+          "t0": 0.0121
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0687,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8632660dad994d0d88550f487c6fa81b",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T11:28:16.429250+00:00",
+      "fusion": {
+        "fused_risk": 0.2362,
+        "normalized_scores": {
+          "pii": 0.1286,
+          "grounding": 0.197,
+          "toxicity": 0.2362,
+          "t0": 0.1748
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2122,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "41fe1d65e91d40618a9a456d3f8a0cb4",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T11:29:57.827079+00:00",
+      "fusion": {
+        "fused_risk": 0.0725,
+        "normalized_scores": {
+          "pii": 0.0633,
+          "grounding": 0.025,
+          "toxicity": 0.0725,
+          "t0": 0.0357
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1168,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "1b5660398301438fbd4c85fc45919450",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T12:32:11.185155+00:00",
+      "fusion": {
+        "fused_risk": 0.0667,
+        "normalized_scores": {
+          "pii": 0.0164,
+          "grounding": 0.0667,
+          "toxicity": 0.0329,
+          "t0": 0.0578
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0304,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "55eaa9bbae494620bef624a1ba9f35b6",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T14:43:15.252136+00:00",
+      "fusion": {
+        "fused_risk": 0.1403,
+        "normalized_scores": {
+          "pii": 0.1403,
+          "grounding": 0.1057,
+          "toxicity": 0.1111,
+          "t0": 0.1129
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1345,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "1e0d3b7c9c824668acb7ccab61c2c8e7",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T17:53:41.526018+00:00",
+      "fusion": {
+        "fused_risk": 0.1249,
+        "normalized_scores": {
+          "pii": 0.0433,
+          "grounding": 0.0106,
+          "toxicity": 0.0692,
+          "t0": 0.1249
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.099,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "097cad430b8443f49821c4bafe54f10c",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T19:06:26.772859+00:00",
+      "fusion": {
+        "fused_risk": 0.0848,
+        "normalized_scores": {
+          "pii": 0.0107,
+          "grounding": 0.0427,
+          "toxicity": 0.0848,
+          "t0": 0.0732
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1017,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "3342d5f2198843479b69f632c79a4648",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-26T21:54:40.347259+00:00",
+      "fusion": {
+        "fused_risk": 0.2812,
+        "normalized_scores": {
+          "pii": 0.1493,
+          "grounding": 0.0579,
+          "toxicity": 0.2812,
+          "t0": 0.189
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.3209,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "b21762a1611949a59a9d45976515b6cb",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T00:49:43.395496+00:00",
+      "fusion": {
+        "fused_risk": 0.2107,
+        "normalized_scores": {
+          "pii": 0.2107,
+          "grounding": 0.0902,
+          "toxicity": 0.058,
+          "t0": 0.0102
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2323,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "87e64a3eeecd45fea95e1da770089f0a",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T02:34:32.309505+00:00",
+      "fusion": {
+        "fused_risk": 0.0726,
+        "normalized_scores": {
+          "pii": 0.0025,
+          "grounding": 0.0045,
+          "toxicity": 0.0668,
+          "t0": 0.0726
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0369,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "de5c40629666452c8eb961388176de18",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T05:33:41.380284+00:00",
+      "fusion": {
+        "fused_risk": 0.2341,
+        "normalized_scores": {
+          "pii": 0.2341,
+          "grounding": 0.0966,
+          "toxicity": 0.0969,
+          "t0": 0.1227
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2809,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0cd3e1dff9534cbfb256d5f29096c8f5",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T07:20:29.960722+00:00",
+      "fusion": {
+        "fused_risk": 0.1226,
+        "normalized_scores": {
+          "pii": 0.0763,
+          "grounding": 0.0095,
+          "toxicity": 0.1117,
+          "t0": 0.1226
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1679,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8a838119dfef40b3b8426e22fd324b76",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T07:25:35.877240+00:00",
+      "fusion": {
+        "fused_risk": 0.0891,
+        "normalized_scores": {
+          "pii": 0.0891,
+          "grounding": 0.0291,
+          "toxicity": 0.0138,
+          "t0": 0.0751
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0878,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "7ca3beaedf224191bacf13dfc3f45d05",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T12:36:50.525741+00:00",
+      "fusion": {
+        "fused_risk": 0.0873,
+        "normalized_scores": {
+          "pii": 0.0314,
+          "grounding": 0.013,
+          "toxicity": 0.0847,
+          "t0": 0.0873
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1205,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "a177b1450f8a4357967513eca68fdd31",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T14:21:25.691223+00:00",
+      "fusion": {
+        "fused_risk": 0.0384,
+        "normalized_scores": {
+          "pii": 0.0384,
+          "grounding": 0.0071,
+          "toxicity": 0.0173,
+          "t0": 0.0273
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0316,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "a0e249abe1d341a397f4ea1aa653ee1c",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T14:26:39.310738+00:00",
+      "fusion": {
+        "fused_risk": 0.0359,
+        "normalized_scores": {
+          "pii": 0.0337,
+          "grounding": 0.0359,
+          "toxicity": 0.0131,
+          "t0": 0.0091
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0198,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c9a5856b6c0a431d9f3c9957298e80c1",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T20:40:11.010926+00:00",
+      "fusion": {
+        "fused_risk": 0.2266,
+        "normalized_scores": {
+          "pii": 0.1018,
+          "grounding": 0.2266,
+          "toxicity": 0.1762,
+          "t0": 0.2143
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6562,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "225340bedd0f4810b934d834e69c3d03",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T20:50:35.965623+00:00",
+      "fusion": {
+        "fused_risk": 0.0648,
+        "normalized_scores": {
+          "pii": 0.0619,
+          "grounding": 0.0236,
+          "toxicity": 0.0648,
+          "t0": 0.0147
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0167,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "548a54693e5f439da0d94d06aaa812b1",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-27T21:00:08.009434+00:00",
+      "fusion": {
+        "fused_risk": 0.1137,
+        "normalized_scores": {
+          "pii": 0.0402,
+          "grounding": 0.1137,
+          "toxicity": 0.0931,
+          "t0": 0.0928
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1077,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "e717c430d27749ebaa52ac2ab15c2df5",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T00:09:01.222119+00:00",
+      "fusion": {
+        "fused_risk": 0.1412,
+        "normalized_scores": {
+          "pii": 0.09,
+          "grounding": 0.0356,
+          "toxicity": 0.1412,
+          "t0": 0.0087
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.5741,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "5fc141e431c348ecbb526e8ea535c540",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T00:38:26.951952+00:00",
+      "fusion": {
+        "fused_risk": 0.1789,
+        "normalized_scores": {
+          "pii": 0.1091,
+          "grounding": 0.057,
+          "toxicity": 0.1789,
+          "t0": 0.1537
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1801,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "a01c404ca3a84300967d0ce35e06035d",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T00:43:25.102034+00:00",
+      "fusion": {
+        "fused_risk": 0.2817,
+        "normalized_scores": {
+          "pii": 0.2522,
+          "grounding": 0.0475,
+          "toxicity": 0.2817,
+          "t0": 0.0324
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.878,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "333787f1520444a7931a82516c7a326e",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T04:31:54.205571+00:00",
+      "fusion": {
+        "fused_risk": 0.0566,
+        "normalized_scores": {
+          "pii": 0.0418,
+          "grounding": 0.0553,
+          "toxicity": 0.0566,
+          "t0": 0.0371
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1038,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c14304a2c3524039a5f37c5c9a0e9bee",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T06:54:30.292925+00:00",
+      "fusion": {
+        "fused_risk": 0.0733,
+        "normalized_scores": {
+          "pii": 0.049,
+          "grounding": 0.0306,
+          "toxicity": 0.0733,
+          "t0": 0.0546
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0499,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "bcfd670550a24665a3dab9c1ad35c9a6",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T07:50:14.793159+00:00",
+      "fusion": {
+        "fused_risk": 0.0446,
+        "normalized_scores": {
+          "pii": 0.0446,
+          "grounding": 0.0293,
+          "toxicity": 0.0087,
+          "t0": 0.0067
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0725,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "3b5139ec29d64dfbacf4fad92824b500",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T09:03:42.469654+00:00",
+      "fusion": {
+        "fused_risk": 0.1192,
+        "normalized_scores": {
+          "pii": 0.1192,
+          "grounding": 0.0168,
+          "toxicity": 0.1062,
+          "t0": 0.1183
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0822,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "e0cc954f2fe64358b4e3790478dfeec8",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T12:47:36.448463+00:00",
+      "fusion": {
+        "fused_risk": 0.1474,
+        "normalized_scores": {
+          "pii": 0.023,
+          "grounding": 0.0808,
+          "toxicity": 0.1474,
+          "t0": 0.1178
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1885,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8fefd4ac05d641878c311d1e933a7456",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T13:40:03.844148+00:00",
+      "fusion": {
+        "fused_risk": 0.1396,
+        "normalized_scores": {
+          "pii": 0.0826,
+          "grounding": 0.1396,
+          "toxicity": 0.0331,
+          "t0": 0.052
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1155,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "8f33a587729943b4a351101439f8f279",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T13:56:59.597303+00:00",
+      "fusion": {
+        "fused_risk": 0.2609,
+        "normalized_scores": {
+          "pii": 0.2048,
+          "grounding": 0.0544,
+          "toxicity": 0.2609,
+          "t0": 0.1395
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.8407,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "8accc99c8cc0431c9da8b8e07a2d79c9",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T18:08:13.131834+00:00",
+      "fusion": {
+        "fused_risk": 0.0608,
+        "normalized_scores": {
+          "pii": 0.0608,
+          "grounding": 0.0306,
+          "toxicity": 0.023,
+          "t0": 0.0578
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0808,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "5d74969b02434c79af83fa28f6066264",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T18:34:28.608970+00:00",
+      "fusion": {
+        "fused_risk": 0.2535,
+        "normalized_scores": {
+          "pii": 0.1143,
+          "grounding": 0.2535,
+          "toxicity": 0.2339,
+          "t0": 0.0927
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6179,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "90ad8afd1515489091345060733ea772",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T19:21:12.623464+00:00",
+      "fusion": {
+        "fused_risk": 0.1468,
+        "normalized_scores": {
+          "pii": 0.0462,
+          "grounding": 0.0892,
+          "toxicity": 0.0934,
+          "t0": 0.1468
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1393,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "f230adcf01614dbb9bb6c3c264104061",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T21:37:13.460461+00:00",
+      "fusion": {
+        "fused_risk": 0.1125,
+        "normalized_scores": {
+          "pii": 0.0538,
+          "grounding": 0.1125,
+          "toxicity": 0.0888,
+          "t0": 0.0374
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6971,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "2ae04db88dcc4b42b009d49c8813e8a2",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-28T23:08:57.279235+00:00",
+      "fusion": {
+        "fused_risk": 0.1471,
+        "normalized_scores": {
+          "pii": 0.0712,
+          "grounding": 0.0126,
+          "toxicity": 0.015,
+          "t0": 0.1471
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1773,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0eef83c9d7d0437bb3deb457f72cbaab",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T00:18:43.066640+00:00",
+      "fusion": {
+        "fused_risk": 0.041,
+        "normalized_scores": {
+          "pii": 0.0287,
+          "grounding": 0.041,
+          "toxicity": 0.0057,
+          "t0": 0.0264
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6051,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "acda2903c8c54b0ea00e3db6a2c23a7e",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T06:47:42.161419+00:00",
+      "fusion": {
+        "fused_risk": 0.07,
+        "normalized_scores": {
+          "pii": 0.0302,
+          "grounding": 0.0218,
+          "toxicity": 0.057,
+          "t0": 0.07
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1063,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "edde307ef4804a7496632e386d15035b",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T08:57:14.147352+00:00",
+      "fusion": {
+        "fused_risk": 0.0233,
+        "normalized_scores": {
+          "pii": 0.0071,
+          "grounding": 0.0233,
+          "toxicity": 0.0127,
+          "t0": 0.004
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0072,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "b24b9cba858641b5b5755f748e931bc2",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T09:12:23.512504+00:00",
+      "fusion": {
+        "fused_risk": 0.0421,
+        "normalized_scores": {
+          "pii": 0.0354,
+          "grounding": 0.0421,
+          "toxicity": 0.0067,
+          "t0": 0.0385
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0848,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "f1b6e694c7da4f0ba2e325e6de1cfde0",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T09:39:48.383793+00:00",
+      "fusion": {
+        "fused_risk": 0.2778,
+        "normalized_scores": {
+          "pii": 0.0751,
+          "grounding": 0.2778,
+          "toxicity": 0.1173,
+          "t0": 0.2532
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.6601,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "0ef6a2d6d22d45cca269e1c4e63369d6",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T10:49:57.750388+00:00",
+      "fusion": {
+        "fused_risk": 0.0914,
+        "normalized_scores": {
+          "pii": 0.0749,
+          "grounding": 0.0914,
+          "toxicity": 0.0254,
+          "t0": 0.038
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0652,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "4da47f277a2b42c99b811b0f4ebd051b",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T15:16:45.216196+00:00",
+      "fusion": {
+        "fused_risk": 0.1811,
+        "normalized_scores": {
+          "pii": 0.1088,
+          "grounding": 0.0185,
+          "toxicity": 0.1811,
+          "t0": 0.0972
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.5715,
+        "judge_reason": "judge disagrees: toxicity risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "ba975882fc004c779eb91464afb7221e",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T16:47:23.426220+00:00",
+      "fusion": {
+        "fused_risk": 0.0672,
+        "normalized_scores": {
+          "pii": 0.0644,
+          "grounding": 0.0415,
+          "toxicity": 0.0672,
+          "t0": 0.0482
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0374,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "adf77d92e9204456a16146d5adc66e81",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T17:31:23.152698+00:00",
+      "fusion": {
+        "fused_risk": 0.1041,
+        "normalized_scores": {
+          "pii": 0.0296,
+          "grounding": 0.0402,
+          "toxicity": 0.0696,
+          "t0": 0.1041
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0846,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "aaafeb7787f74f8da162063009d4523f",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T17:31:33.329709+00:00",
+      "fusion": {
+        "fused_risk": 0.2474,
+        "normalized_scores": {
+          "pii": 0.1672,
+          "grounding": 0.2474,
+          "toxicity": 0.1278,
+          "t0": 0.115
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2264,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "e48308292fe14ff78f72bbbfef1b7324",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T19:02:53.363246+00:00",
+      "fusion": {
+        "fused_risk": 0.136,
+        "normalized_scores": {
+          "pii": 0.0819,
+          "grounding": 0.0704,
+          "toxicity": 0.067,
+          "t0": 0.136
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1038,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "1b365ef006ae44658c16acdda6a2d0ea",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T20:33:52.343956+00:00",
+      "fusion": {
+        "fused_risk": 0.1025,
+        "normalized_scores": {
+          "pii": 0.0256,
+          "grounding": 0.1025,
+          "toxicity": 0.0524,
+          "t0": 0.0195
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0543,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "78bf8f45fe964d19bb6bd648d692888e",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T21:21:27.218875+00:00",
+      "fusion": {
+        "fused_risk": 0.0685,
+        "normalized_scores": {
+          "pii": 0.0132,
+          "grounding": 0.025,
+          "toxicity": 0.0614,
+          "t0": 0.0685
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.02,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "11e3bb8c354c47ae9c35bedbf708985b",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T21:35:16.713448+00:00",
+      "fusion": {
+        "fused_risk": 0.1456,
+        "normalized_scores": {
+          "pii": 0.0808,
+          "grounding": 0.0845,
+          "toxicity": 0.1285,
+          "t0": 0.1456
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1507,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "c15d1a30f8454dd8aaa91f9610573a1b",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-29T23:07:24.094803+00:00",
+      "fusion": {
+        "fused_risk": 0.0728,
+        "normalized_scores": {
+          "pii": 0.0116,
+          "grounding": 0.0728,
+          "toxicity": 0.0076,
+          "t0": 0.0446
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": true,
+        "judge_score": 0.5415,
+        "judge_reason": "judge disagrees: grounding risk understated by fast pipeline"
+      }
+    },
+    {
+      "request_id": "8ea5736436994cca9d093c75ab960871",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T00:05:55.501538+00:00",
+      "fusion": {
+        "fused_risk": 0.1185,
+        "normalized_scores": {
+          "pii": 0.1185,
+          "grounding": 0.0384,
+          "toxicity": 0.0462,
+          "t0": 0.054
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0791,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "37f93a13adb54796a2315873ed1074b1",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T01:05:28.060302+00:00",
+      "fusion": {
+        "fused_risk": 0.0409,
+        "normalized_scores": {
+          "pii": 0.0212,
+          "grounding": 0.0409,
+          "toxicity": 0.0235,
+          "t0": 0.0221
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0341,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "00a79bb9b4954e678b6be2b54bfc4202",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T02:27:04.649008+00:00",
+      "fusion": {
+        "fused_risk": 0.0747,
+        "normalized_scores": {
+          "pii": 0.0148,
+          "grounding": 0.0595,
+          "toxicity": 0.0552,
+          "t0": 0.0747
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1082,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "d54e61f6649a4c7e8fd642cd68be5acf",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T02:30:25.222172+00:00",
+      "fusion": {
+        "fused_risk": 0.1228,
+        "normalized_scores": {
+          "pii": 0.0615,
+          "grounding": 0.1228,
+          "toxicity": 0.0569,
+          "t0": 0.0174
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1235,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "5dca5d5f257842bf8f9e1518b8a61755",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T03:04:27.162719+00:00",
+      "fusion": {
+        "fused_risk": 0.1364,
+        "normalized_scores": {
+          "pii": 0.1321,
+          "grounding": 0.0668,
+          "toxicity": 0.01,
+          "t0": 0.1364
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.1846,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "47ab890e11894471b9bfefffabca72b3",
+      "policy_hash": "c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T04:32:42.471153+00:00",
+      "fusion": {
+        "fused_risk": 0.0282,
+        "normalized_scores": {
+          "pii": 0.0173,
+          "grounding": 0.0143,
+          "toxicity": 0.0282,
+          "t0": 0.0195
+        },
+        "dominant_detector": "toxicity",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0614,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "62e09564b282486f8ea75b7502f7e9fa",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T05:13:12.886385+00:00",
+      "fusion": {
+        "fused_risk": 0.2398,
+        "normalized_scores": {
+          "pii": 0.2398,
+          "grounding": 0.2354,
+          "toxicity": 0.118,
+          "t0": 0.2294
+        },
+        "dominant_detector": "pii",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": true
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.2534,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "2c69866503614b2e84baa7d44221de2e",
+      "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T07:18:11.408929+00:00",
+      "fusion": {
+        "fused_risk": 0.0874,
+        "normalized_scores": {
+          "pii": 0.0782,
+          "grounding": 0.0874,
+          "toxicity": 0.0009,
+          "t0": 0.0727
+        },
+        "dominant_detector": "grounding",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0722,
+        "judge_reason": "judge agrees: within policy"
+      }
+    },
+    {
+      "request_id": "0b436e12097c44f091a666ed4fcad9ba",
+      "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
+      "action": "ALLOW",
+      "recorded_at": "2026-08-30T12:43:45.499902+00:00",
+      "fusion": {
+        "fused_risk": 0.0805,
+        "normalized_scores": {
+          "pii": 0.0615,
+          "grounding": 0.0628,
+          "toxicity": 0.0369,
+          "t0": 0.0805
+        },
+        "dominant_detector": "t0",
+        "effective_bands": [
+          0.3,
+          0.7
+        ],
+        "near_edge": false
+      },
+      "judge": {
+        "flagged": false,
+        "judge_score": 0.0435,
+        "judge_reason": "judge agrees: within policy"
+      }
+    }
+  ]
+}

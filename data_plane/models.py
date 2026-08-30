@@ -131,10 +131,11 @@ class DetectorSignals(BaseModel):
     instead would be wrong in the other direction for grounding, where 0.0 similarity is
     the WORST possible value and would block every non-RAG request.
 
-    GAP (T1-7): there is no way to express "the detector ran and threw". `None` means
-    inapplicable, and a failed detector is currently indistinguishable from one that did
-    not apply - which leaves `fail_mode`'s only remaining trigger unreachable. See
-    docs/TIER_1.md.
+    T1-7 fix: `detector_status` carries the one bit `raw`/`normalized` cannot -
+    "inapplicable" (no signal) and "failed" (an exception) both leave a detector's field
+    `None`, and only this map tells them apart. A clean run needs no entry: absence here
+    means "ran fine" or "did not apply", exactly as before. Only `"failed"` is ever
+    written, and `fuse()` routes it through `fail_mode` (docs/TIER_1.md).
     """
 
     t0_severities: List[str] = Field(default_factory=list)   # "hard" | "high" | "medium" | "low"
@@ -144,6 +145,8 @@ class DetectorSignals(BaseModel):
 
     injection_risk: float = 0.0                              # from the Input Gate
     input_flagged: bool = False
+
+    detector_status: Dict[str, Literal["failed"]] = Field(default_factory=dict)
 
 
 class FusionResult(BaseModel):
@@ -164,6 +167,10 @@ class FusionResult(BaseModel):
     bands_tightened: bool = False
     t2_recommended: bool = False
 
+    # T1-7: which detectors ran and threw, carried through from DetectorSignals so the
+    # ledger can tell "clean" apart from "unchecked" (docs/TIER_1.md).
+    detector_status: Dict[str, str] = Field(default_factory=dict)
+
     def ledger_row(self) -> Dict:
         """Privacy-safe projection. Scores only - no output text, no entity values."""
         return {
@@ -179,6 +186,7 @@ class FusionResult(BaseModel):
             ],
             "bands_tightened": self.bands_tightened,
             "t2_recommended": self.t2_recommended,
+            "detector_status": self.detector_status,
         }
 
 

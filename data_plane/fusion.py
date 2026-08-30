@@ -187,6 +187,22 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
         fused, low_band, high_band, normalized, dominant, fired, signals, bundle
     )
 
+    # --- T1-7: a detector that threw is not the same as one that did not apply --------
+    # `DetectorSignals.detector_status` is the only place that distinction survives past
+    # normalization. `fail_mode` is the field meant to answer "we could not verify the
+    # output" - fail_closed refuses outright; fail_open still delivers, but the failure
+    # is now recorded rather than silently indistinguishable from a clean pass.
+    failed = sorted(d for d, status in signals.detector_status.items() if status == "failed")
+    if failed:
+        if bundle.get("fail_mode", "fail_open") == "fail_closed":
+            action = "BLOCK"
+            reason = (
+                f"fail_closed: {', '.join(failed)} failed and the output could not be "
+                f"verified (T1-7)."
+            )
+        else:
+            reason = f"{reason} [{', '.join(failed)} failed; fail_open, not enforced.]"
+
     # T2 is worth its ~600ms only inside the graded middle, where the answer is
     # genuinely uncertain. Comparisons are inclusive on both ends.
     t2_recommended = bool(bundle.get("t2_enabled")) and low_band <= fused <= high_band
@@ -203,6 +219,7 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
         effective_high_band=high_band,
         bands_tightened=tightened,
         t2_recommended=t2_recommended,
+        detector_status=dict(signals.detector_status),
     )
 
 

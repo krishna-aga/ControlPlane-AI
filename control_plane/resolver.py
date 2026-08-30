@@ -3,10 +3,15 @@ Policy Resolver for ControlPlane.ai
 Handles 2-tier policy inheritance, strict field-level locking, and structural validation.
 """
 
+import warnings
 from typing import Dict, Any, List
 import yaml
 
 from control_plane.models import PolicyConfig, PolicyLockingError
+
+
+class InertCriticalThresholdWarning(UserWarning):
+    """A detector_critical_thresholds entry that can never change an action (T1-8)."""
 
 # There is deliberately no latency budget and no per-tier latency estimates here.
 # The estimates that used to live at this point (T0=5, T1=40, T2=600) were unvalidated
@@ -304,12 +309,26 @@ def _validate_critical_coherence(policy_dict: Dict[str, Any]) -> None:
     Critical thresholds live on the NORMALIZED S scale, where 0.5 is the detection
     threshold for every detector. A value below 0.5 would fire before normal
     detection does - incoherent for a field meaning 'more severe than normal'.
+
+    T1-8: a critical value >= high_band can never fire first - a detector reaching it
+    has already exceeded high_band and blocks on the band arithmetic alone, making the
+    floor redundant in every reachable configuration. This is legal (a tenant may later
+    tighten high_band underneath it) so it warns rather than rejects - see docs/TIER_1.md.
     """
+    high_band = policy_dict.get("high_band")
     for detector, critical in policy_dict.get("detector_critical_thresholds", {}).items():
         if not (0.5 <= critical <= 1.0):
             raise ValueError(
                 f"detector_critical_thresholds['{detector}'] = {critical} is out of range. "
                 f"Must be within [0.5, 1.0] on the normalized S scale "
                 f"(0.5 == the detection threshold)."
+            )
+        if high_band is not None and critical >= high_band:
+            warnings.warn(
+                f"detector_critical_thresholds['{detector}'] = {critical} is >= "
+                f"high_band ({high_band}); this floor is inert at the current bands and "
+                f"can never change an action on its own (T1-8, docs/TIER_1.md).",
+                InertCriticalThresholdWarning,
+                stacklevel=3,
             )
 

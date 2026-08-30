@@ -1,6 +1,9 @@
 # Tier 1 — Grounding, Toxicity, and the Bias Gap
 
-**Status:** Specified, **not implemented**. No code has been written for this.
+**Status:** The two detectors themselves remain specified, **not implemented** — no
+model weights are vendored (§7 still holds). **T1-7 and T1-8 (§5) are fixed**: they
+were live defects in code that already shipped, not part of the deferred detector
+build, and required no model dependency.
 **Scope:** future `data_plane/detectors/grounding.py` and `toxicity.py`,
 `data_plane/models.py`, `control_plane/{models,resolver}.py`,
 `policies/org_baseline.yaml`.
@@ -31,11 +34,11 @@ already exists.
 | **T1-4** | Cosine measures topic, not truth | Accepted limitation | Document, as T0-8 does |
 | **T1-5** | NLI cannot reuse `grounding_threshold` — direction flips | Latent P1 | Separate detector key, if ever built |
 | **T1-6** | One `toxicity_probability` collapses six unequal labels | Design defect | `toxicity_label_weights`, locked |
-| **T1-7** | `DetectorSignals` cannot express *"the detector failed"* | **Live gap** | Buildable now; `fail_mode` cannot fire without it |
-| **T1-8** | Every critical floor is **inert** at the shipped bands | **Live finding** | Documented here; the mechanism is a tenant lever, not a default safeguard |
+| **T1-7** | `DetectorSignals` cannot express *"the detector failed"* | **Fixed** | `detector_status`, routed through `fail_mode` (§5) |
+| **T1-8** | Every critical floor is **inert** at the shipped bands | **Fixed (warns)** | `_validate_critical_coherence` now warns when a critical value is inert (§5) |
 
-T1-7 and T1-8 are defects in code that already ships. Everything else is contract for
-code that does not exist yet.
+T1-7 and T1-8 were defects in code that already shipped, and are now fixed. Everything
+else is contract for code that does not exist yet.
 
 ---
 
@@ -346,32 +349,35 @@ is missing is only the third axis.
 
 ---
 
-## 5. Two defects in shipped code that T1 exposes
+## 5. Two defects in shipped code that T1 exposed — both now fixed
 
-### T1-7 — there is no way to say *"the detector failed"* — **live gap**
+### T1-7 — there is no way to say *"the detector failed"* — **fixed**
 
-`DetectorSignals` documents `None` as meaning **not applicable**. There is no
-representation for *the detector ran and threw*.
+`DetectorSignals` documented `None` as meaning **not applicable**. There was no
+representation for *the detector ran and threw* — under max aggregation the two cases
+were indistinguishable: a crashed detector was simply absent from the max, which looked
+exactly like a non-RAG request having no grounding signal. Worse, in the code that
+actually shipped, nothing even caught the exception: a thrown `run_t0` crashed
+`process_request` outright, which is neither `fail_open` nor `fail_closed` — just an
+unhandled 500.
 
-Under max aggregation those are indistinguishable: a crashed toxicity model is simply
-absent from the max, which looks exactly like a non-RAG request having no grounding
-signal.
+**Fix.** `DetectorSignals.detector_status: Dict[str, Literal["failed"]]` — absence still
+means "ran clean" or "did not apply", exactly as before; only `"failed"` is ever written,
+since that's the one bit `raw`/`normalized` cannot already express
+(`data_plane/models.py`). `Gateway._run_t0()` wraps both call sites — the main
+generation path and the cache-revalidation path — and turns an exception into
+`detector_status={"t0": "failed"}` instead of letting it propagate. `fuse()`
+(`data_plane/fusion.py`) routes a failed entry through `bundle["fail_mode"]`:
+`fail_closed` forces `BLOCK` with the failed detector(s) named in the reason string;
+`fail_open` still delivers the response but the failure is now recorded in
+`FusionResult.detector_status`, which reaches the ledger via `ledger_row()` — "clean"
+and "unchecked" are distinguishable there for the first time. A cache-revalidation
+failure additionally forces an eviction and a `not cached` skip reason regardless of
+`fail_mode`, since serving or storing a response T0 could not re-verify defeats the
+point of the revalidation step. Covered by `tests/test_fusion.py::TestDetectorFailure`
+and `tests/test_gateway.py::TestT0FailureFailMode`.
 
-**`fail_mode` is the field that answers "we could not verify the output" — and it cannot
-fire, because nothing tells it a detector failed.** Under `fail_open` that is a silent
-unchecked pass on that axis; under `fail_closed` it should be a refusal and will not be.
-[`NO_LATENCY_BUDGET.md`](NO_LATENCY_BUDGET.md) §5 narrowed `fail_mode`'s trigger to
-detector *exceptions* precisely because timeouts were removed — this is the trigger it
-was narrowed to, and it is unreachable.
-
-The fix is small and belongs in the same change as the first T1 detector: a per-detector
-status of `applicable | inapplicable | failed`, with `failed` routed through `fail_mode`
-and recorded in the ledger. A compliance row that cannot distinguish "clean" from
-"unchecked" is not an audit record.
-
-**This is buildable today**, with no model dependency, against the existing T0 path.
-
-### T1-8 — every critical floor is inert at the shipped bands — **live finding**
+### T1-8 — every critical floor is inert at the shipped bands — **fixed (warns)**
 
 `detector_critical_thresholds` is described in [`RISK_FUSION.md`](RISK_FUSION.md) §4 as
 *"the fix that matters most."* It was, under weighted averaging, where a toxicity score
@@ -416,12 +422,19 @@ must set its critical value **below `high_band`**, and nothing in the schema or 
 validator says so. `_validate_critical_coherence` checks `0.5 <= crit <= 1.0` — it would
 accept every inert value in the current baseline without comment.
 
-Worth considering: extend that validator to **warn** when `crit >= high_band`, i.e. when
-the entry can never change an action. It cannot be an error — the values are legal and a
-tenant may later tighten `high_band` — but a policy field that provably does nothing at
-compile time is exactly what P8's `extra="forbid"` argument was about: *for a policy
-authoring surface, the author believing they configured something they did not is the
-worst failure mode.*
+**Fix.** `_validate_critical_coherence` (`control_plane/resolver.py`) now warns —
+`InertCriticalThresholdWarning`, never raises — whenever a resolved critical value is
+`>= high_band`. It cannot be an error: the values are legal, and a tenant may later
+tighten `high_band` underneath them, at which point the same entry stops being inert.
+`compile_bundle` (`control_plane/compiler.py`) catches and prints every warning raised
+during resolution, so `python -m control_plane.compiler` surfaces exactly the table
+above at compile time instead of leaving the author to infer it — the P8 `extra="forbid"`
+argument again: *for a policy authoring surface, the author believing they configured
+something they did not is the worst failure mode.* The shipped baseline still ships all
+three entries inert; compiling any of the three persona bundles now prints the warning
+for `pii`, `grounding`, and `toxicity`, which is accurate — nothing about the underlying
+tenant-lever mechanism changed, only its visibility. Covered by
+`tests/test_control_plane.py::TestStructuralValidators::test_inert_critical_threshold_warns_not_rejects`.
 
 ---
 
@@ -463,9 +476,7 @@ There are deliberately **no** `grounding_aggregation` or `toxicity_aggregation` 
 
 ## 8. Open
 
-* **T1-7 should be fixed regardless of whether T1 ships.** `fail_mode`'s only remaining
-  trigger is currently unreachable.
-* **T1-8's validator warning** — worth adding, needs a decision on warn vs. reject.
+* **T1-7 and T1-8 are fixed** (§5) — no longer open.
 * **`pii_aggregation` and `t0_aggregation` remain knobs** while grounding and toxicity
   are specified without one (§2A). That inconsistency is defensible — those two predate
   the max-aggregation argument — but it should be resolved in one direction eventually.

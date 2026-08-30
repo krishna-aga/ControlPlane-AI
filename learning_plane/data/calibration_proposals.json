@@ -1,0 +1,24 @@
+[
+  {
+    "from_threshold": 0.3,
+    "to_threshold": 0.39,
+    "metrics_at_current": {
+      "threshold": 0.3,
+      "fp_rate": 0.1762,
+      "fn_rate": 0.0421,
+      "escalation_rate": 0.3,
+      "cost_per_1k": 2163.16
+    },
+    "metrics_at_candidate": {
+      "threshold": 0.39,
+      "fp_rate": 0.0614,
+      "fn_rate": 0.0842,
+      "escalation_rate": 0.1967,
+      "cost_per_1k": 3116.32
+    },
+    "proposed_at": "2026-08-30T14:23:44.754904+00:00",
+    "proposal_hash": "db8f8cdb76eec97d99484be48e53f1f4cf99367eeff4b243a640062a31341eec",
+    "approved": true,
+    "approved_at": "2026-08-30T14:23:53.426843+00:00"
+  }
+]

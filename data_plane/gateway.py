@@ -119,6 +119,18 @@ class Gateway:
         return latest_result, latest_map, live_risk
 
     @staticmethod
+    def _run_t0(text: str, scope, restore_map: Dict[str, str], bundle: Dict,
+                forward_prompt: str) -> tuple[Optional[T0Result], bool]:
+        """
+        Runs T0 and reports whether it threw, rather than letting the exception cross
+        into fusion indistinguishably from "no findings" (T1-7). Returns (result, failed).
+        """
+        try:
+            return run_t0(text, scope, restore_map, bundle, forward_prompt), False
+        except Exception:
+            return None, True
+
+    @staticmethod
     def _apply_action(action: str, text: str, t0: Optional[T0Result]) -> str:
         """
         Execute the action on the output.
@@ -231,11 +243,15 @@ class Gateway:
                 # bundle in force right now, so the invariant "nothing reaches a client
                 # unchecked by T0" holds without a cache-shaped exception. A stored entry
                 # that no longer passes is evicted rather than served.
-                revalidated = run_t0(found.entry.response, scope, {}, bundle,
-                                     gate.forward_prompt)
-                if revalidated.findings:
+                revalidated, t0_failed = self._run_t0(found.entry.response, scope, {},
+                                                      bundle, gate.forward_prompt)
+                if t0_failed or revalidated.findings:
                     self.cache.evict_entry(namespace, found.entry)
-                    cache_skip = "cached entry failed Tier 0 revalidation; evicted"
+                    cache_skip = (
+                        "cached entry's Tier 0 revalidation failed (T1-7); evicted, "
+                        "not served" if t0_failed else
+                        "cached entry failed Tier 0 revalidation; evicted"
+                    )
                 else:
                     fusion = fuse(DetectorSignals(injection_risk=live_injection_risk), bundle)
                     return finish(
@@ -270,17 +286,20 @@ class Gateway:
                           f"provider refusal ({model.finish_reason})", model=model)
 
         # --- T0, then fusion -----------------------------------------------------------
-        t0 = run_t0(model.text, scope, restore_map, bundle, gate.forward_prompt)
+        t0, t0_failed = self._run_t0(model.text, scope, restore_map, bundle, gate.forward_prompt)
 
         signals = DetectorSignals(
-            t0_severities=t0.severities,
+            t0_severities=t0.severities if t0 else [],
             # T1 is not built. Its fields stay None, which marks them INAPPLICABLE so
             # fusion renormalizes rather than scoring an absent detector as zero.
             injection_risk=live_injection_risk,
             input_flagged=(gate.action == "FLAG"),
+            # T1-7: a thrown T0 is not "no findings" - fuse() routes this through
+            # fail_mode rather than letting it pass as silently clean.
+            detector_status={"t0": "failed"} if t0_failed else {},
         )
 
-        if t0.hard_override:
+        if t0 is not None and t0.hard_override:
             # Skipping T1/T2 is correct for cost - the decision is already final. Fusion
             # still runs so the ledger row carries the same shape as every other row.
             fusion = fuse(signals, bundle)
@@ -302,9 +321,14 @@ class Gateway:
             session.rework_count += 1
 
         write_ok, write_skip = storable(
-            action, bundle, tenant_id, restore_map, len(t0.findings),
+            action, bundle, tenant_id, restore_map, len(t0.findings) if t0 else 0,
             gate.action == "FLAG", len(messages), bool(model.provider_refused),
         )
+        # A response T0 could not verify must never seed the cache - a future lookup
+        # would revalidate it, but the point of caching is to skip that work, and
+        # skipping it for an unverified response is exactly the hole T1-7 closes.
+        if t0_failed:
+            write_ok, write_skip = False, "Tier 0 could not verify this response (T1-7); not cached"
         if write_ok and namespace:
             self.cache.store(namespace, gate.forward_prompt, text, request_id,
                              bundle.get("policy_hash", ""))

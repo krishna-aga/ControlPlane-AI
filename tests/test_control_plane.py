@@ -237,6 +237,30 @@ class TestStructuralValidators(unittest.TestCase):
             resolve_policy(base, child)
         self.assertIn("normalized S scale", str(ctx.exception))
 
+    def test_inert_critical_threshold_warns_not_rejects(self):
+        """
+        T1-8: a critical value >= high_band can never fire before the band arithmetic
+        already blocks - legal (a tenant may tighten high_band later), so it warns
+        rather than raises. The shipped baseline ships exactly this shape.
+        """
+        from control_plane.resolver import InertCriticalThresholdWarning
+        base = load_yaml_policy("policies/org_baseline.yaml")
+        with self.assertWarns(InertCriticalThresholdWarning) as ctx:
+            resolved = resolve_policy(base, PolicyConfig())
+        self.assertIn("inert", str(ctx.warning))
+        self.assertLessEqual(resolved["low_band"], resolved["high_band"])   # still compiles
+
+    def test_critical_threshold_below_high_band_does_not_warn(self):
+        base = load_yaml_policy("policies/org_baseline.yaml")
+        child = PolicyConfig(
+            detector_critical_thresholds={"pii": 0.6, "grounding": 0.6, "toxicity": 0.6})
+        import warnings
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            resolve_policy(base, child)
+        from control_plane.resolver import InertCriticalThresholdWarning
+        self.assertFalse(any(issubclass(w.category, InertCriticalThresholdWarning) for w in caught))
+
     def test_valid_baseline_still_compiles(self):
         """The shipped baseline must satisfy every new validator."""
         base = load_yaml_policy("policies/org_baseline.yaml")

@@ -9,6 +9,7 @@ being reached on an Input Gate refusal.
 
 import json
 import unittest
+from unittest.mock import patch
 
 from data_plane.adapters import Credentials, MockAdapter, ModelCallError, ModelResponse
 from data_plane.gateway import Gateway
@@ -158,6 +159,36 @@ class TestUpstreamFailure(unittest.TestCase):
             [{"role": "user", "content": "hi"}], BUNDLES["customer_support"], "s")
         self.assertEqual(r.action, "BLOCK")
         self.assertTrue(r.provider_refused)
+
+
+class TestT0FailureFailMode(unittest.TestCase):
+    """
+    T1-7: a thrown T0 must not cross fusion looking like "no findings". Before this fix
+    it crashed process_request outright; now it is a controlled, fail_mode-driven
+    outcome, recorded in the ledger rather than indistinguishable from a clean pass.
+    """
+
+    def test_fail_closed_persona_blocks_rather_than_crashing(self):
+        with patch("data_plane.gateway.run_t0", side_effect=RuntimeError("boom")):
+            r = gw().process_request(
+                [{"role": "user", "content": "hi"}], BUNDLES["decision_support"], "s")
+        self.assertEqual(r.action, "BLOCK")
+        self.assertIn("t0", r.reason)
+        self.assertEqual(r.fusion.detector_status, {"t0": "failed"})
+
+    def test_fail_open_persona_still_delivers_and_records_the_failure(self):
+        with patch("data_plane.gateway.run_t0", side_effect=RuntimeError("boom")):
+            r = gw().process_request(
+                [{"role": "user", "content": "hi"}], BUNDLES["customer_support"], "s")
+        self.assertEqual(r.action, "ALLOW")
+        self.assertEqual(r.fusion.detector_status, {"t0": "failed"})
+        self.assertIsNone(r.t0)
+
+    def test_a_failed_t0_is_never_written_to_cache(self):
+        with patch("data_plane.gateway.run_t0", side_effect=RuntimeError("boom")):
+            r = gw().process_request(
+                [{"role": "user", "content": "hi"}], BUNDLES["customer_support"], "s")
+        self.assertEqual(r.cache_skip_reason, "Tier 0 could not verify this response (T1-7); not cached")
 
 
 class TestMultiTurn(unittest.TestCase):

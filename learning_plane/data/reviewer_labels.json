@@ -1,0 +1,32 @@
+{
+  "317ff0c3cb234d7982dcf2e5763d40a8": {
+    "action": "FLAG",
+    "dominant_detector": "t0",
+    "fused_risk": 0.6886,
+    "label": "approve",
+    "reviewed_at": "2026-08-30T13:48:46.748928+00:00"
+  },
+  "814fb783fbb744749de47f06d03cc411": {
+    "action": "FLAG",
+    "dominant_detector": "t0",
+    "fused_risk": 0.6886,
+    "label": "approve",
+    "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+    "reviewed_at": "2026-08-30T14:23:25.280120+00:00"
+  },
+  "8d9574eb858544d8897565e9f3f852f5": {
+    "action": "FLAG",
+    "dominant_detector": "pii",
+    "fused_risk": 0.5712,
+    "label": "approve",
+    "reviewed_at": "2026-08-30T13:48:35.428550+00:00"
+  },
+  "d3dbfbe59cb04f46bfae800abd8fb5fe": {
+    "action": "FLAG",
+    "dominant_detector": "pii",
+    "fused_risk": 0.5712,
+    "label": "approve",
+    "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+    "reviewed_at": "2026-08-30T14:23:21.689992+00:00"
+  }
+}

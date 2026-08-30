@@ -124,6 +124,43 @@ class TestCriticalFloors(unittest.TestCase):
                 self.assertEqual(result.action, "BLOCK")
 
 
+class TestDetectorFailure(unittest.TestCase):
+    """
+    T1-7: `detector_status` is the only place a thrown detector is distinguishable from
+    one that simply did not apply - both leave the raw field `None`. `fuse()` routes a
+    `"failed"` entry through `fail_mode`.
+    """
+
+    def test_fail_closed_blocks_on_a_failed_detector(self):
+        bundle = get_bundle(BUNDLES["decision_support"])   # ships fail_mode: fail_closed
+        self.assertEqual(bundle["fail_mode"], "fail_closed")
+        result = fuse(DetectorSignals(detector_status={"t0": "failed"}), bundle)
+        self.assertEqual(result.action, "BLOCK")
+        self.assertIn("t0", result.reason)
+
+    def test_fail_open_still_delivers_but_records_the_failure(self):
+        bundle = get_bundle(BUNDLES["customer_support"])   # ships fail_mode: fail_open
+        self.assertEqual(bundle["fail_mode"], "fail_open")
+        result = fuse(DetectorSignals(detector_status={"t0": "failed"}), bundle)
+        self.assertEqual(result.action, "ALLOW")
+        self.assertEqual(result.detector_status, {"t0": "failed"})
+        self.assertIn("t0", result.reason)
+
+    def test_a_failed_detector_does_not_mask_a_clean_signal_from_another_axis(self):
+        """Failure on one axis must not suppress what a different, working axis found."""
+        bundle = get_bundle(BUNDLES["decision_support"])
+        result = fuse(
+            DetectorSignals(toxicity_probability=0.99, detector_status={"t0": "failed"}),
+            bundle,
+        )
+        self.assertEqual(result.action, "BLOCK")   # fail_closed and the toxicity floor agree
+
+    def test_no_failure_leaves_detector_status_empty(self):
+        bundle = get_bundle(BUNDLES["customer_support"])
+        result = fuse(DetectorSignals(toxicity_probability=0.1), bundle)
+        self.assertEqual(result.detector_status, {})
+
+
 class TestTier0Scoring(unittest.TestCase):
     """T0-2: T0 is categorical and must not be run through the piecewise normalizer."""
 

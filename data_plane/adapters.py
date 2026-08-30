@@ -46,7 +46,7 @@ class Credentials(BaseModel):
         return {"provider": self.provider, "model": self.model, "api_key": "<redacted>"}
 
     @classmethod
-    def from_env(cls, provider: str = "gemini", model: str = "gemini-2.0-flash") -> "Credentials":
+    def from_env(cls, provider: str = "gemini", model: str = "gemini-3.5-flash") -> "Credentials":
         """
         DEVELOPMENT ONLY. Real tenants supply credentials with the request; resolving
         from process environment is what makes a gateway single-tenant.
@@ -110,13 +110,48 @@ class GeminiAdapter:
     Google Gemini via the REST API, over stdlib urllib - no SDK dependency to drift.
 
     Untested against the live endpoint in this repo's test suite by design: the suite
-    must run with no network and no key.
+    must run with no network and no key. The retry logic below IS tested, against a
+    mocked `urlopen` - it is deterministic control flow, not a live call.
     """
 
     ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
-    def __init__(self, timeout_s: float = 30.0):
+    # 429 (rate limit) and 503 (overloaded) are the provider asking for a moment, not a
+    # real failure - a demo hammering the free tier hits 429 constantly, and surfacing
+    # that as a hard BLOCK on the first attempt is misleading about what actually went
+    # wrong. Every other HTTPError (401, 404, ...) is not retried: retrying a bad key or
+    # a renamed model just delays the same failure.
+    RETRYABLE_CODES = (429, 503)
+
+    def __init__(self, timeout_s: float = 30.0, max_retries: int = 3, backoff_s: float = 1.5):
         self.timeout_s = timeout_s
+        self.max_retries = max_retries
+        self.backoff_s = backoff_s
+
+    @staticmethod
+    def _retry_after(error: "urllib.error.HTTPError") -> Optional[float]:
+        """Honor the provider's own Retry-After header when it sends one."""
+        value = error.headers.get("Retry-After") if error.headers else None
+        try:
+            return float(value) if value is not None else None
+        except ValueError:
+            return None
+
+    def _call_with_retry(self, request: "urllib.request.Request") -> Dict:
+        """Either returns a parsed response body or raises ModelCallError - never both."""
+        for attempt in range(self.max_retries + 1):
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as e:
+                if e.code in self.RETRYABLE_CODES and attempt < self.max_retries:
+                    time.sleep(self._retry_after(e) or self.backoff_s * (2 ** attempt))
+                    continue
+                # The key can appear in a echoed request URL, so never surface the raw body.
+                raise ModelCallError(f"Gemini returned HTTP {e.code}") from None
+            except Exception as e:
+                raise ModelCallError(f"Gemini call failed: {type(e).__name__}") from None
+        raise ModelCallError("Gemini call failed after retries.")   # unreachable; satisfies type-checking
 
     def generate(self, system_prompt: str, messages: List[Dict[str, str]],
                  credentials: Credentials) -> ModelResponse:
@@ -147,15 +182,7 @@ class GeminiAdapter:
         )
 
         started = time.perf_counter()
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
-                body = json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            # The key can appear in a echoed request URL, so never surface the raw body.
-            raise ModelCallError(f"Gemini returned HTTP {e.code}") from None
-        except Exception as e:
-            raise ModelCallError(f"Gemini call failed: {type(e).__name__}") from None
-
+        body = self._call_with_retry(request)
         latency_ms = (time.perf_counter() - started) * 1000.0
         candidates = body.get("candidates") or []
         if not candidates:

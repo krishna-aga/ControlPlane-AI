@@ -5,3 +5,7 @@ pyyaml>=6.0
 
 # Pydantic schema validation for Control Plane & Data Plane
 pydantic>=2.0
+
+# Learning Plane demo UI (streamlit run learning_plane/app.py)
+streamlit>=1.60
+pandas>=2.0
