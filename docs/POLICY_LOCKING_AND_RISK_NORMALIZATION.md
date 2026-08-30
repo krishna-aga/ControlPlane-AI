@@ -19,8 +19,20 @@ This document captures a design review of the policy locking model and the detec
 | **N1** | `min(1, P/T)` **saturates**, destroying severity ordering | Design defect | Open |
 | **N2** | Critical thresholds have no coherent scale across detectors | Design defect | Open |
 | **N3** | spaCy emits no confidence; NER sub-score collapses to binary | Design gap | Open |
+| **T0-1** | Track 2 secrets are heuristic inside a tier defined as deterministic, yet unconditionally `BLOCK` | **Architectural** | Open |
+| **T0-2** | No severity→score mapping; T0 scores share no scale with T1 | Contract gap | Open |
+| **T0-3** | `pii_mode` action and fused-risk action can disagree, no precedence rule | Contract gap | Open |
+| **T0-4** | `origin` resolution fails under `warn-and-confirm` | Correctness gap | Open |
+| **T0-5** | Spans are pre-de-anonymization offsets; ordering constraint unstated | Correctness gap | Open |
+| **T0-6** | Blocklist latency does not hold at realistic list sizes | Performance | Open |
+| **T0-7** | Hard-override short-circuit makes T0's own accuracy unmeasurable | Observability | Open |
+| **T0-8** | Canary matching is defeated by transformed exfiltration | Accepted limitation | Document |
 
-P1–P5 are Control Plane. N1–N3 are the Data Plane normalization contract. They interact: N1's fix is what makes N2's fix possible, and P4's fix depends on N2.
+P1–P5 are Control Plane. N1–N3 are the Data Plane normalization contract. T0-1–T0-8 are Tier 0 contract defects against [`t0_deterministic_checks.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/t0_deterministic_checks.md).
+
+They interact: N1's fix is what makes N2's fix possible, P4's fix depends on N2, and T0-2 is what N1 leaves unresolved for the deterministic tier.
+
+**Character of each group:** P1–P5 and N1–N3 are largely *arithmetic* — formulas and directions that are wrong. T0-1–T0-8 are largely *contract gaps* — behavior the spec assumes is obvious but never states, which is what breaks when someone implements from it months later.
 
 ---
 
@@ -405,6 +417,200 @@ pii_aggregation: density   # max | noisy_or | density
 
 ---
 
+# Part C — Tier 0 Contract Defects
+
+Reviewed against [`.agents/skills/t0_deterministic_checks.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/t0_deterministic_checks.md).
+
+## T0-1. Track 2 contradicts T0's own definition — **architectural**
+
+### Symptom
+
+The T0 skill file states its objective as *"**Deterministically** inspect the raw upstream model output... with **zero false-positive tolerance**."* But Track 2 generic secret detection (§4 Check 3) is entropy analysis plus heuristic guards — a judgment call, not a determination. It can be wrong.
+
+When it is wrong it carries `severity: hard` → `hard_override` → unconditional `BLOCK` that ignores `fail_mode`, ignores persona, and short-circuits T1/T2.
+
+**The only probabilistic check in the tier has the most severe and least reviewable consequence.**
+
+### Root cause
+
+Three of the four T0 checks genuinely are deterministic:
+
+| Check | Basis | FP rate |
+| :--- | :--- | :--- |
+| Canary match | exact string equality | ~0 |
+| Track 1 secrets | provider-issued prefix | ~0 |
+| Checksum IDs | Luhn / Verhoeff arithmetic | ~0 |
+| **Track 2 secrets** | **entropy + heuristics** | **non-zero, unmeasured** |
+
+Track 2 was placed in T0 because it is *fast*, but T0's contract is about *certainty*, not speed. Those are different properties and the spec conflated them.
+
+### Fix (choose one)
+
+**(a) Downgrade — recommended.** Track 2 emits `severity: high`, never `hard`. It feeds fusion and can still drive `REDACT`/`BLOCK` through the normal ladder, but cannot unconditionally block on its own. Keeps the ~1 ms cost in T0 without claiming certainty it does not have.
+
+**(b) Relocate.** Move Track 2 to T1, where probabilistic detectors belong, and let it carry a weight.
+
+Track 1, canary, and checksum checks retain `hard_override` — for those, the certainty claim is real.
+
+---
+
+## T0-2. No severity→score mapping, and a scale mismatch with T1
+
+### Symptom
+
+`T0Result.score: float` exists in the contract, but nothing defines how typed findings produce it. With `detector_weights.t0 = 0.4`, the unspecified choice decides the outcome:
+
+```text
+S_t0 = 1.0 -> R = 0.400 -> WARN/T2
+S_t0 = 0.5 -> R = 0.200 -> ALLOW
+S_t0 = 0.3 -> R = 0.120 -> ALLOW
+```
+
+A blocklist hit either warns or is silently allowed depending on a number the spec never states. Equally undefined: how multiple findings of differing severities combine — `max`, `sum`, or otherwise.
+
+### The deeper problem
+
+**T0 has no threshold, so the piecewise normalization from N1 cannot apply to it.** After N1, T1 scores carry the semantic "`0.5` = detection threshold"; T0's scores remain categorical. The fusion engine sums them as if they shared a scale. They do not.
+
+### Fix
+
+Define an explicit severity→score table in the bundle, and an explicit aggregation rule:
+
+```yaml
+t0_severity_scores:      # categorical by construction; NOT piecewise-normalized
+  hard:   1.0
+  high:   0.75
+  medium: 0.40
+  low:    0.15
+
+t0_aggregation: max      # max | noisy_or
+```
+
+And document plainly that `S_t0` is a **categorical severity score**, not a threshold-normalized one — so the `0.5` midpoint semantics of T1 scores do not apply to it. Fusion must not assume a shared interpretation.
+
+---
+
+## T0-3. `pii_mode` and fused risk can disagree, with no precedence rule
+
+### Symptom
+
+A Luhn-valid credit card in the output that is *not* a hard override:
+
+```text
+RAG (all 4 applicable)  -> R = 0.400 -> WARN/T2
+non-RAG (renormalized)  -> R = 0.500 -> WARN/T2
+```
+
+But `pii_mode: redact-and-proceed` says `REDACT`.
+
+Two mechanisms produce two different actions for the same finding, and nothing specifies which wins. This is not an edge case — it is the most common T0 finding under the most common persona.
+
+### Fix
+
+State precedence explicitly. Recommended rule:
+
+> `pii_mode` governs the **handling of PII findings**; fused risk governs the **disposition of the response**. They compose rather than compete: a PII finding is redacted per `pii_mode` **and** contributes its score to fusion, which may independently escalate the response to `BLOCK`.
+
+Under that rule the example redacts the card *and* records `WARN`, which is coherent. The alternative — one overriding the other — must be written down if chosen instead.
+
+---
+
+## T0-4. `origin` resolution fails under `warn-and-confirm`
+
+### Symptom
+
+§5 of the T0 spec resolves `echoed_placeholder` by checking a finding's span against the volatile placeholder map. But `warn-and-confirm` (Profile C, internal_copilot) **passes raw PII through unredacted — no placeholder map is ever created.**
+
+The model can echo a real credit card straight back from the prompt, and T0 will label it `model_generated`, treating a benign echo as novel model-originated leakage. That inverts exactly the distinction §5 exists to draw.
+
+### Fix
+
+Origin resolution must consult both sources:
+
+```python
+def resolve_origin(matched_text, span, placeholder_map, sanitized_input):
+    if span_overlaps_placeholder(span, placeholder_map):
+        return "echoed_placeholder"
+    if matched_text in sanitized_input:        # covers warn-and-confirm
+        return "echoed_from_input"
+    return "model_generated"
+```
+
+This adds a third `origin` value (`echoed_from_input`), which the `Finding` model and the ledger schema must both accept.
+
+---
+
+## T0-5. Spans are pre-de-anonymization offsets
+
+### Symptom
+
+T0 runs before de-anonymization, so its spans index the **placeholder-bearing** string. After restoration the offsets shift — `[EMAIL_1]` is 9 characters, the restored address might be 22. The spec never states this, leaving two hazards:
+
+1. **`REDACT` applied after de-anonymization would corrupt the output**, masking the wrong character ranges.
+2. **Ledger spans are pre-de-anonymization offsets.** A compliance officer aligning them against the delivered response gets meaningless ranges.
+
+### Fix
+
+Add an explicit ordering constraint to the pipeline diagram:
+
+```text
+T0/T1/T2 -> fusion -> ACTION (mask using spans)  -> de-anonymization -> client
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^     must come after masking
+```
+
+And annotate the ledger schema: `span` values are offsets into the **pre-de-anonymization** output. If spans against the delivered text are ever needed, they must be remapped during restoration, not reused.
+
+---
+
+## T0-6. Blocklist latency does not hold at realistic sizes
+
+### Symptom
+
+§7 budgets ~0.5 ms for the blocklist, which holds only for a small list. A naive loop over N compiled patterns is $O(N \times \text{text})$; a realistic enterprise blocklist of a few thousand terms consumes the entire 5 ms T0 budget by itself.
+
+### Fix
+
+Compile the terms into a single structure that scans the text once:
+
+* **Single alternation regex** — `re.compile(r"\b(?:term1|term2|...)\b")`. Simple, adequate to a few hundred terms.
+* **Aho–Corasick** (`pyahocorasick`) — $O(\text{text})$ regardless of term count. Correct choice above ~1000 terms.
+
+Either way the structure is built once at bundle load and cached by `policy_hash`, as §7 already requires.
+
+---
+
+## T0-7. The hard-override short-circuit makes T0's own accuracy unmeasurable
+
+### Symptom
+
+Skipping T1/T2 on `hard_override` (§7) is correct for cost. But it means a T0 block never receives an independent second opinion, and its ledger row carries no other detector signal.
+
+Combined with T0-1, this is circular: **you cannot measure Track 2's false-positive rate, because the requests that would reveal it are exactly the ones where you stopped collecting evidence.** The thresholds are therefore untunable in principle, not just in practice.
+
+### Fix
+
+Sample a small fraction of hard-override requests through the full cascade for evaluation only — the action stays `BLOCK`, but T1/T2 still run and are recorded. This mirrors the counterfactual sampling already specified in [`run_shadow_eval.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/run_shadow_eval.md), applied to `BLOCK`ed rather than `ALLOW`ed traffic.
+
+Alternatively, route hard-override rows to the Learning Plane reviewer queue for human adjudication.
+
+---
+
+## T0-8. Canary matching is defeated by transformed exfiltration
+
+### Symptom
+
+Matching is substring + case-insensitive/whitespace-collapsed + 8-character prefix. An injection instructing the model to *"output the confidential line reversed"*, *"in base64"*, *"with a space between each character"*, or *"translated"* defeats all three.
+
+### Disposition — accepted limitation, not a defect to fix
+
+Chasing arbitrary transformations is unbounded, and normalization at the output stage would cost far more than the ~0.01 ms the check currently takes. The correct response is honesty in the spec rather than engineering.
+
+The T0 skill file currently implies canary detection is airtight. It should state:
+
+> Canary matching detects **naive** exfiltration — a model reproducing the token verbatim or truncated. It does **not** detect adversarially transformed reproduction (encoded, reversed, character-spaced, or translated). Canaries are a high-confidence positive signal, not a completeness guarantee: a canary hit proves exfiltration occurred; the absence of one does not prove it did not.
+
+---
+
 # 4. Verification Record
 
 All figures below were produced by executing against the actual repository code and policy files.
@@ -456,7 +662,28 @@ weights vs floors {pii/grounding/toxicity:0.15} -> PASS
 critical_S in [0.5, 1.0]                      -> PASS
 ```
 
-### E. Existing test suite
+### E. Tier 0 fusion behavior — T0-2 and T0-3 confirmed
+
+Non-override T0 finding (Luhn-valid card), against current defaults:
+
+```text
+RAG (all 4)       S_t0=1.0 -> R=0.400 -> WARN/T2
+non-RAG (renorm)  S_t0=1.0 -> R=0.500 -> WARN/T2
+  pii_mode=redact-and-proceed says: REDACT
+  -> two mechanisms, two actions, no precedence rule (T0-3)
+```
+
+Blocklist-only hit, with `S_t0` unspecified (T0-2):
+
+```text
+S_t0=1.0 -> R=0.400 -> WARN/T2
+S_t0=0.5 -> R=0.200 -> ALLOW
+S_t0=0.3 -> R=0.120 -> ALLOW
+```
+
+The same finding warns or is silently allowed depending on a number the spec never defines.
+
+### F. Existing test suite
 
 The 5 tests in [`tests/test_control_plane.py`](file:///home/krishna/Projects/ControlPlane/tests/test_control_plane.py) cover control-plane locking, latency, and hashing only. Normalization is Data Plane code that does not yet exist, so no existing test is affected by Part B.
 
@@ -475,6 +702,8 @@ The 5 tests in [`tests/test_control_plane.py`](file:///home/krishna/Projects/Con
 | `ner_label_confidence` | `dict[str, float]` | `{PERSON: 0.85, GPE: 0.75, ORG: 0.70}` | no | — |
 | `pii_aggregation` | `str` | `"density"` | no | enum |
 | `nli_grounding_enabled` | `bool` | `false` | no | true stricter |
+| `t0_severity_scores` | `dict[str, float]` | `{hard: 1.0, high: 0.75, medium: 0.40, low: 0.15}` | yes | map, higher stricter |
+| `t0_aggregation` | `str` | `"max"` | no | enum |
 
 ### Changed behavior
 
@@ -483,6 +712,9 @@ The 5 tests in [`tests/test_control_plane.py`](file:///home/krishna/Projects/Con
 * Detector normalization changes from `min(1, P/T)` to piecewise (N1).
 * Grounding normalizes ungroundedness `U = 1 − similarity` (N1).
 * Ledger rows gain `raw_score` per detector, plus NER entity counts (N1, N3).
+* `Finding.origin` gains a third value, `echoed_from_input` (T0-4).
+* Track 2 secrets emit `high` instead of `hard`, losing `hard_override` (T0-1).
+* `S_t0` is documented as a **categorical** severity score, explicitly outside the piecewise `0.5`-midpoint semantics that govern T1 (T0-2).
 
 ---
 
@@ -499,6 +731,17 @@ The 5 tests in [`tests/test_control_plane.py`](file:///home/krishna/Projects/Con
 9. Recompile all three bundles; update the `policy_hash` values in `TECHNICAL_DOCUMENTATION_AND_SUMMARY.md`.
 10. Extend `tests/test_control_plane.py`: grounding direction (both ways), enum tightening, map key-removal evasion, weight-sum, band-ordering, critical-coherence.
 
+### Tier 0 (Part C)
+
+11. Downgrade Track 2 secrets to `severity: high`; keep `hard_override` only for canary, Track 1, and checksum findings (T0-1).
+12. Add `t0_severity_scores` and `t0_aggregation`; document `S_t0` as categorical, outside piecewise semantics (T0-2).
+13. Write the `pii_mode` vs. fused-risk precedence rule into both the T0 skill file and the fusion spec (T0-3).
+14. Extend origin resolution to check the sanitized input; add `echoed_from_input` to `Finding` and the ledger schema (T0-4).
+15. Add the masking-before-de-anonymization ordering constraint to the pipeline diagram; annotate ledger spans as pre-de-anonymization offsets (T0-5).
+16. Replace the per-term blocklist loop with a single alternation regex or Aho–Corasick, built once per `policy_hash` (T0-6).
+17. Add evaluation-only sampling of hard-override requests through the full cascade (T0-7).
+18. Add the canary completeness caveat to `t0_deterministic_checks.md` §4 (T0-8).
+
 ---
 
 # 7. Open Items
@@ -507,3 +750,7 @@ The 5 tests in [`tests/test_control_plane.py`](file:///home/krishna/Projects/Con
 2. **`pii_aggregation` default** — `density` is proposed as most honest, but `max` is the conservative choice. Undecided.
 3. **Critical floor target level.** Currently floors at `high_band`. An alternative is a per-detector target action, letting some detectors floor at `low_band` (warn) rather than severe. Undecided.
 4. **P1 is a behavior change to a locked field.** Existing deployed bundles would flip enforcement direction on recompile. Needs a migration note if any bundle has shipped.
+5. **T0-1 disposition** — downgrade Track 2 to `high` (recommended) or relocate it to T1. Undecided.
+6. **T0-3 precedence rule** — the recommended reading is that `pii_mode` and fused risk *compose* (redact the finding, and still let fusion escalate the response). The alternative is strict precedence of one over the other. Undecided.
+7. **T0-2 severity scores** — the proposed `{1.0, 0.75, 0.40, 0.15}` table is an estimate, not a measurement. Note that `medium: 0.40` × `w_t0 0.4` = `0.16`, below `low_band`, so a blocklist-only hit still resolves to `ALLOW`. Whether that is intended needs confirming.
+8. **`t0_aggregation` default** — `max` proposed; `noisy_or` would make many low-severity findings compound. Undecided.
