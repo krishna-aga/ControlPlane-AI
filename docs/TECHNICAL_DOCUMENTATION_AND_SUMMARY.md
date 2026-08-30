@@ -26,12 +26,24 @@
 
 ### C. Compiled Bundles (`bundles/`)
 Generated, immutable JSON bundles ready for Data Plane loading:
-* `bundles/customer_support_bundle.json` (`policy_hash: abf9c48404b54d90b8cfc11c937de01a5789b1b1a405cfb8e4f1b0617fcdc8ae`)
-* `bundles/decision_support_bundle.json` (`policy_hash: cc073f17d933bb36434e52321fd50b07bdefc8125f44bdfd6f9ad459bb406655`)
-* `bundles/internal_copilot_bundle.json` (`policy_hash: 3fac854a401a11b2c3d6f74ca8a2ed324e3a13a2711b595411fb949b104d2695`)
+* `bundles/customer_support_bundle.json` (`policy_hash: 86aab9a168bbb66f26768340f6a6bbb1d1530c6e444deba23bce84ecc61bb67f`)
+* `bundles/decision_support_bundle.json` (`policy_hash: 641fe1612a860997445fc8773ae5113fbe2c9374bb23d1d31e585e3a430da716`)
+* `bundles/internal_copilot_bundle.json` (`policy_hash: f1123299b9d788c81b76feb08c2ddd67fa89f610678fd694da189cd08e62b76e`)
 
-> Hashes changed when the bundles gained `detector_critical_thresholds`, `t0_severity_scores`,
-> and the T0/T1 detector configuration fields. See `docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md`.
+> Hashes changed twice: first when the bundles gained `detector_critical_thresholds`,
+> `t0_severity_scores`, and the T0/T1 detector configuration fields
+> (see `docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md`), and again when the
+> `policy_hash` reproducibility defect was fixed (see below). The values above are the
+> first ones that are actually reproducible — recompiling now returns the same hash.
+
+> **`policy_hash` reproducibility (fixed).** `locked_fields` was built with
+> `list(set(...))`. Python randomizes string hashing per process, so the list order
+> changed on every run, and `json.dumps(sort_keys=True)` sorts dict keys but **not**
+> list elements — so identical policy inputs produced a different SHA-256 on every
+> compilation. The three hashes previously recorded here could never be reproduced.
+> `resolver.py` now uses `sorted(set(...))`, making `locked_fields` canonical and the
+> hash stable across processes. This is the guarantee that load-by-`policy_hash`,
+> the semantic cache key, and ledger policy attestation all depend on.
 
 ### D. Automated Test Suite (`tests/test_control_plane.py`)
 Run via `.venv/bin/python3 -m unittest discover -s tests`:
@@ -42,7 +54,14 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
 * `test_hash_reproducibility`: Asserts identical parameters produce identical SHA-256 hashes.
 * `TestLockingDirection` (5 tests): Regression cover for **P1** — `grounding_threshold` is a similarity *floor*, so raising it is stricter; the lock was previously inverted. Also covers newly-locked `toxicity_threshold` and enum tightening.
 * `TestStructuralValidators` (4 tests): Rejects inverted risk bands, `detector_weights` not summing to $1.0$, and critical thresholds below the detection midpoint.
-* **Test Status:** 14/14 tests passing cleanly in $0.022\text{ seconds}$.
+* `TestHashDeterminism` (3 tests): Regression cover for the `policy_hash` reproducibility
+  defect. Compiles each persona in **subprocesses under five different `PYTHONHASHSEED`
+  values** and asserts a single hash, asserts `locked_fields` is canonically ordered, and
+  asserts each committed bundle's stored `policy_hash` still recompiles to itself
+  (`compile_bundle.md` Validation Check 3). `test_hash_reproducibility` could not catch
+  this — it hashes two hand-written dicts inside one interpreter, and the defect only
+  appears across processes.
+* **Test Status:** 17/17 tests passing.
 
 ---
 

@@ -72,7 +72,12 @@ def resolve_policy(base_policy: PolicyConfig, child_policy: PolicyConfig) -> Dic
     resolved: Dict[str, Any] = base_policy.model_dump(exclude_unset=True)
     child_dict: Dict[str, Any] = child_policy.model_dump(exclude_unset=True)
 
-    locked_fields: List[str] = list(set(
+    # sorted(), not list(set()): Python randomizes string hashing per process, so
+    # list(set(...)) yields a different order on every run. locked_fields is part of
+    # the canonical hash payload, and json.dumps(sort_keys=True) sorts dict keys but
+    # NOT list elements - so the unordered variant made policy_hash non-reproducible
+    # across processes, breaking bundle-load-by-hash and ledger attestation.
+    locked_fields: List[str] = sorted(set(
         resolved.get("locked_fields", []) + child_dict.get("locked_fields", [])
     ))
 

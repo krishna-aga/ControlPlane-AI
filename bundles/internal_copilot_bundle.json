@@ -1,8 +1,8 @@
 {
   "policy_name": "internal-employee-copilot",
   "policy_version": "v1.0.0",
-  "policy_hash": "3fac854a401a11b2c3d6f74ca8a2ed324e3a13a2711b595411fb949b104d2695",
-  "compiled_at": "2026-08-30T06:14:13.267028+00:00",
+  "policy_hash": "f1123299b9d788c81b76feb08c2ddd67fa89f610678fd694da189cd08e62b76e",
+  "compiled_at": "2026-08-30T06:34:55.871602+00:00",
   "description": "Internal enterprise employee assistant.",
   "latency_budget_ms": 400,
   "t2_enabled": false,
@@ -44,10 +44,10 @@
   },
   "pii_aggregation": "max",
   "locked_fields": [
-    "high_band",
-    "pii_threshold",
     "grounding_threshold",
-    "toxicity_threshold",
-    "low_band"
+    "high_band",
+    "low_band",
+    "pii_threshold",
+    "toxicity_threshold"
   ]
 }

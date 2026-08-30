@@ -4,7 +4,10 @@ Tests policy resolution, strict field locking exceptions, latency budget checks,
 Uses standard library unittest.
 """
 
+import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -161,6 +164,89 @@ class TestStructuralValidators(unittest.TestCase):
             resolved = resolve_policy(base, load_yaml_policy(f"policies/{persona}.yaml"))
             self.assertAlmostEqual(sum(resolved["detector_weights"].values()), 1.0)
             self.assertLessEqual(resolved["low_band"], resolved["high_band"])
+
+
+class TestHashDeterminism(unittest.TestCase):
+    """
+    Regression cover for the policy_hash reproducibility defect.
+
+    locked_fields was built with list(set(...)). Python randomizes string hashing
+    per process, so the list order - and therefore the SHA-256 over the canonical
+    payload - changed on every run. json.dumps(sort_keys=True) sorts dict keys but
+    NOT list elements, so nothing downstream corrected for it.
+
+    test_hash_reproducibility above cannot catch this: it hashes two hand-written
+    dicts inside a single interpreter. The defect only shows across processes.
+    """
+
+    SEEDS = ["0", "1", "42", "12345", "99999"]
+
+    # Compiles a persona and prints "<hash>\t<canonical locked_fields json>".
+    PROBE = (
+        "from control_plane.resolver import load_yaml_policy, resolve_policy;"
+        "from control_plane.compiler import compute_policy_hash;"
+        "r = resolve_policy("
+        "    load_yaml_policy('policies/org_baseline.yaml'),"
+        "    load_yaml_policy('policies/%s.yaml'));"
+        "import json, sys;"
+        "sys.stdout.write(compute_policy_hash(r) + chr(9) + json.dumps(r['locked_fields']))"
+    )
+
+    def _compile_under_seed(self, persona: str, seed: str):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run(
+            [sys.executable, "-c", self.PROBE % persona],
+            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            env=env,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        policy_hash, locked_json = proc.stdout.split("\t")
+        return policy_hash, json.loads(locked_json)
+
+    def test_hash_stable_across_processes(self):
+        """Identical inputs must produce an identical hash under any PYTHONHASHSEED."""
+        for persona in ["customer_support", "decision_support", "internal_copilot"]:
+            with self.subTest(persona=persona):
+                results = [self._compile_under_seed(persona, s) for s in self.SEEDS]
+                hashes = {h for h, _ in results}
+                self.assertEqual(
+                    len(hashes), 1,
+                    f"{persona} produced {len(hashes)} distinct hashes across "
+                    f"PYTHONHASHSEED values {self.SEEDS}: {sorted(hashes)}",
+                )
+
+    def test_locked_fields_ordering_is_canonical(self):
+        """
+        The ordering itself must be canonical, not merely incidentally stable -
+        it is what the hash is taken over.
+        """
+        for persona in ["customer_support", "decision_support", "internal_copilot"]:
+            with self.subTest(persona=persona):
+                for seed in self.SEEDS:
+                    _, locked = self._compile_under_seed(persona, seed)
+                    self.assertEqual(locked, sorted(locked))
+
+    def test_committed_bundle_hashes_are_reproducible(self):
+        """
+        Recompiling a shipped bundle must reproduce the policy_hash recorded in it.
+        This is the guarantee the Data Plane's load-by-policy_hash depends on, and
+        the check compile_bundle.md lists as Validation Check 3.
+        """
+        for persona in ["customer_support", "decision_support", "internal_copilot"]:
+            with self.subTest(persona=persona):
+                bundle_path = f"bundles/{persona}_bundle.json"
+                if not os.path.exists(bundle_path):
+                    self.skipTest(f"{bundle_path} not present")
+                with open(bundle_path, encoding="utf-8") as f:
+                    stored = json.load(f)
+                recomputed, _ = self._compile_under_seed(persona, "0")
+                self.assertEqual(
+                    recomputed, stored["policy_hash"],
+                    f"{bundle_path} is stale or was compiled under the "
+                    f"non-deterministic hash; recompile it.",
+                )
 
 
 if __name__ == "__main__":

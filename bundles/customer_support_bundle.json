@@ -1,8 +1,8 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "abf9c48404b54d90b8cfc11c937de01a5789b1b1a405cfb8e4f1b0617fcdc8ae",
-  "compiled_at": "2026-08-30T06:14:12.812607+00:00",
+  "policy_hash": "86aab9a168bbb66f26768340f6a6bbb1d1530c6e444deba23bce84ecc61bb67f",
+  "compiled_at": "2026-08-30T06:34:55.657408+00:00",
   "description": "Optimized for fast response times and customer interaction.",
   "latency_budget_ms": 200,
   "t2_enabled": false,
@@ -44,10 +44,10 @@
   },
   "pii_aggregation": "max",
   "locked_fields": [
+    "grounding_threshold",
     "high_band",
     "low_band",
     "pii_threshold",
-    "toxicity_threshold",
-    "grounding_threshold"
+    "toxicity_threshold"
   ]
 }
