@@ -84,13 +84,118 @@ Checksum validation is what makes this tier trustworthy rather than noisy: a 16-
 
 **Severity:** `high`, but **not** a hard override — routes through the bundle's `pii_mode` to `REDACT` / `BLOCK` / `WARN`.
 
-### Check 3 — Secrets & Credentials
+### Check 3 — Secrets & Credentials (two-track)
 
-Pre-compiled patterns: `sk-[a-zA-Z0-9]{32,}`, `AKIA[0-9A-Z]{16}`, `ghp_[A-Za-z0-9]{36}`, `xox[baprs]-...`, JWT triples (`eyJ...\.eyJ...\..*`), and `-----BEGIN * PRIVATE KEY-----`.
+#### Track 1 — Known signatures
 
-Generic assignments (`api_key = "..."`) are gated behind a **Shannon entropy floor** read from the bundle as `secret_entropy_threshold` — never hardcoded, per the project's no-hardcoded-constants rule.
+Credential formats are deliberately greppable; providers prefix keys precisely so scanners can find them. **The prefix is the evidence — no entropy analysis required.** This track does roughly 90% of the real work at near-zero false-positive rate.
 
-**Severity:** `hard` — unconditional `BLOCK`.
+```text
+sk-[a-zA-Z0-9]{32,}          OpenAI
+AKIA[0-9A-Z]{16}             AWS access key ID
+ghp_[A-Za-z0-9]{36}          GitHub PAT
+xox[baprs]-...               Slack
+eyJ...\.eyJ...\..*           JWT triple
+-----BEGIN * PRIVATE KEY-----
+```
+
+Track 1 bypasses every gate below **except the placeholder guard**.
+
+#### Track 2 — Generic secrets
+
+For credentials with no recognizable prefix (`db_password = "aB3xK9mP2qL7vN4wR8tY6uZ1"`). Requires **two mandatory conditions**:
+
+* **(a) Assignment context** — the value sits beside a credential-ish key name (`api_key`, `secret`, `token`, `password`, `auth`, `Authorization: Bearer`).
+* **(b) Randomly-generated appearance** — measured by normalized entropy.
+
+**Never entropy alone.** Git SHAs, UUIDs, file hashes, base64 images, minified JS, and our own `CP-CANARY-` tokens are all high-entropy non-secrets. Assignment context is what makes this precise enough to act on.
+
+#### What entropy measures
+
+Bits of unpredictability per character — literally "how many yes/no questions to guess a character":
+
+$$H = -\sum_{c} p(c) \log_2 p(c)$$
+
+Randomly generated strings have near-uniform character distributions (high $H$); human text repeats constantly (low $H$). Reference points: `aB3xK9mP2qL7vN4wR8tY6uZ1` (24 chars, all distinct) → $\log_2 24 = 4.585$ bits/char; `the refund window is thirty` → $3.662$ bits/char.
+
+#### The problem: raw entropy has two ceilings
+
+$$\max H = \log_2(\text{alphabet size}) \qquad \text{AND} \qquad \max H = \log_2(\text{string length})$$
+
+* **Ceiling 1 (alphabet).** Hex has 16 symbols → $\log_2 16 = 4.0$, a hard cap. A flat threshold of $4.5$ (truffleHog's base64 default) is *mathematically unreachable* for hex and would never catch a hex secret.
+* **Ceiling 2 (length).** A 10-char string has ≤10 distinct chars → caps at $\log_2 10 = 3.32$. The problem is not that short strings score too high — it is that they lose all **discriminating power**: `abcdefghij` also scores 3.32, identical to a random 10-char string. Random and non-random converge and the test stops working.
+
+#### Solution 1 — Normalized entropy ratio
+
+Compare against the string's own ceiling rather than an absolute number:
+
+```python
+SEPARATORS = "-_"
+
+def normalized_entropy(s: str) -> float:
+    core     = s.strip(SEPARATORS).replace("-", "").replace("_", "")   # see note below
+    alphabet = detect_charset_size(core)            # 16 hex | 64 b64 | 62 alnum | 95 printable
+    ceiling  = min(log2(alphabet), log2(len(core))) # whichever ceiling binds
+    return shannon_entropy(core) / ceiling
+```
+
+Returns $[0.0, 1.0]$. One threshold (~`0.9`) then works across every charset, which is what collapses the originally-proposed per-charset threshold map down to **a single scalar**.
+
+**Separator stripping is mandatory, not cosmetic.** Hyphens impose a double penalty: they lower raw entropy *and* push charset classification out of `hex(16)` into `printable(95)`, raising the ceiling. Without stripping, a UUID-format API key is a systematic false negative:
+
+| Input | raw H | ceiling | ratio | Outcome |
+| :--- | ---: | ---: | ---: | :--- |
+| `550e8400-e29b-...` naive | 3.39 | 5.17 | **0.66** | ❌ missed |
+| same, separators stripped | ~3.85 | 4.00 | **0.96** | ✅ fires |
+
+UUID-format API keys are common in production, so this is a systematic miss rather than an edge case.
+
+**Implementation trap:** `detect_charset_size` must classify by **character class** (is every char in `[0-9a-f]`? in `[A-Za-z0-9+/=]`?), *never* by counting distinct characters observed. Using the observed count gives repetitive strings a tiny denominator and inflates their ratio — the exact opposite of the intent.
+
+#### Solution 2 — Minimum length gate
+
+`secret_min_length = 24`. Costs nothing real, because credentials are long by construction: AWS key ID 20, GitHub PAT 40, OpenAI 48+, Slack 50+, JWT 100+. Anything shorter is either caught by Track 1 signatures or is not a credential.
+
+**Why 24 and not 20:** the length ceiling binds hardest at short inputs, compressing the margin. At 32 chars the separation is comfortable (random ≈ 0.96–0.98, prose ≈ 0.74). At 20 chars, `"the refund window is"` scores $H = 3.584$, ceiling $4.32$, **ratio 0.83** — only 0.07 below the threshold. Raising the floor to 24 restores headroom at no practical cost.
+
+#### Two cheap guards entropy cannot provide
+
+Entropy is blind to meaning, so these $O(n)$ checks run first:
+
+1. **Placeholder guard** — long runs of a repeated character (`xxxxxxxx`, `00000000`), or the tokens `YOUR_`, `_HERE`, `EXAMPLE`, `PLACEHOLDER`, `<>` wrappers. This prevents documentation examples like `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` from triggering an unconditional `BLOCK`. **Applies to Track 1 as well** — since secret hits are hard overrides, it is worth not being trigger-happy on placeholders.
+
+2. **Dictionary guard — downgrade, do not suppress.** Strings that segment cleanly into common English words (`correcthorsebatterystaple`) are passphrases or prose rather than generated keys.
+
+   > **Important semantic:** a dictionary match must **not** silently drop the finding. Track 2 already requires assignment context, and prose does not appear inside `password = "..."` — so within Track 2 the guard buys little false-positive protection while deleting genuine true positives. A passphrase in a password field *is* a real credential. Therefore a dictionary hit **downgrades severity from `hard` to `medium`**: the finding still feeds fusion normally, but no longer forces an unconditional `BLOCK`.
+
+#### Final logic
+
+```python
+def classify_generic_secret(value: str, bundle) -> Optional[Severity]:
+    """Returns None (not a secret), or the severity to attach."""
+    if len(value) < bundle.secret_min_length:
+        return None                        # defer to Track 1 prefix signatures
+    if looks_like_placeholder(value):
+        return None
+    if normalized_entropy(value) < bundle.secret_entropy_ratio_threshold:
+        return None
+    if is_mostly_dictionary_words(value):
+        return "medium"                    # downgraded, still scored
+    return "hard"
+```
+
+Track 2 additionally requires the assignment-context signal before this is consulted at all.
+
+#### Corrected reference values (32-char inputs)
+
+| String | raw H | ceiling | ratio |
+| :--- | ---: | ---: | ---: |
+| random hex | ~3.90 | 4.00 | 0.98 |
+| random base64 | ~4.80 | 5.00 | 0.96 |
+| English prose | ~3.70 | 5.00 | 0.74 |
+| `password_password_password_1234` | ~3.38 | 4.95 | 0.68 |
+
+**Severity:** `hard` → unconditional `BLOCK`, except where downgraded to `medium` by the dictionary guard.
 
 ### Check 4 — Blocklist
 
@@ -193,12 +298,28 @@ Where `context_block` is the retrieved chunks, each carrying its trailing `[doc-
 
 ### B. New `BundleConfig` / `PolicyConfig` fields
 
-| Field | Type | Purpose |
-| :--- | :--- | :--- |
-| `blocklist_terms` | `list[str]` | Org-denied terms, inline so `policy_hash` pins behavior |
-| `secret_entropy_threshold` | `float` | Shannon entropy floor for generic secret patterns |
+| Field | Type | Default | Purpose |
+| :--- | :--- | :--- | :--- |
+| `blocklist_terms` | `list[str]` | `[]` | Org-denied terms, inline so `policy_hash` pins behavior |
+| `secret_min_length` | `int` | `24` | Minimum candidate length for Track 2 generic secrets |
+| `secret_entropy_ratio_threshold` | `float` | `0.9` | Charset-agnostic normalized entropy floor |
 
-### C. Ledger field
+Two scalars, no per-charset map — the normalized ratio makes a single threshold valid across hex, base64, alphanumeric, and printable charsets.
+
+### C. Resolver locking registration — **required**
+
+[`control_plane/resolver.py`](file:///home/krishna/Projects/ControlPlane/control_plane/resolver.py) hardcodes its "lower value = stricter" field list in `_validate_locked_field_strictness()`. Both new numeric fields are **lower-is-stricter** (a lower entropy ratio and a lower minimum length each catch *more*), so both must be appended to that list:
+
+```python
+if field_name in ["pii_threshold", "grounding_threshold", "toxicity_threshold",
+                  "secret_entropy_ratio_threshold", "secret_min_length"]:
+```
+
+Without this they fall through to the generic fallback branch, which rejects **any** divergence from the base value — including legitimately stricter overrides.
+
+Both should be listed in `org_baseline.yaml`'s `locked_fields`, so a tenant cannot quietly disable generic secret detection by raising the ratio to `0.99`.
+
+### D. Ledger field
 
 `canary_leak` is an enum, not a boolean: `null | "system" | "context" | "both"`. The canary values themselves are **never** written to the ledger.
 
@@ -221,6 +342,21 @@ Where `context_block` is the retrieved chunks, each carrying its trailing `[doc-
 | 11 | Any of the above | Emitted ledger row contains **no raw value** and no canary token |
 | 12 | Hard override present | T1 and T2 confirmed **not invoked** |
 
+### Secret detection sub-suite (`tests/test_t0_secrets.py`)
+
+| # | Case | Expected |
+| :--- | :--- | :--- |
+| S1 | Valid `AKIA` key | Track 1 hit, `hard_override=True` |
+| S2 | `sk-` + 34 `x` characters | **No finding** — placeholder guard, Track 1 |
+| S3 | Random 32-char hex inside `api_key = "..."` | Track 2 hit, `severity="hard"` |
+| S4 | Same hex string bare in prose | **No finding** — no assignment context |
+| S5 | Git SHA in prose | **No finding** — no assignment context |
+| S6 | UUID-format key in `api_key = "..."` | Track 2 hit — **regression guard for separator stripping** |
+| S7 | `password = "correcthorsebatterystaple"` | Finding at `severity="medium"`, **not** `hard` (downgrade, not suppress) |
+| S8 | 15-char random string in assignment | **No finding** — below `secret_min_length` |
+| S9 | `"the refund window is"` (20 chars) in assignment | **No finding** — ratio 0.83 < 0.9 |
+| S10 | `normalized_entropy("aaaa...")` on 32 identical chars | Ratio ≈ 0.0 — charset-class denominator, not observed-count |
+
 ---
 
 ## 10. Integration Checklist for Agents
@@ -229,8 +365,9 @@ Where `context_block` is the retrieved chunks, each carrying its trailing `[doc-
 2. Reuse the shared entity catalog from `data_plane/detectors/pii.py` — do **not** duplicate regex definitions between the input gate and T0.
 3. Invoke `run_t0()` in `data_plane/gateway.py` after the upstream call and strictly **before** de-anonymization.
 4. Honour the hard-override short-circuit: skip T1/T2, proceed directly to fusion.
-5. Add `blocklist_terms` and `secret_entropy_threshold` to `control_plane/models.py` and recompile all three persona bundles.
+5. Add `blocklist_terms`, `secret_min_length`, and `secret_entropy_ratio_threshold` to `control_plane/models.py`, register the two numeric fields in `resolver.py` per §8C, lock them in `org_baseline.yaml`, and recompile all three persona bundles.
 6. Ensure no raw PII, secret value, or canary token reaches the audit ledger.
+7. Strip `-` and `_` before charset classification in `normalized_entropy()`; classify the charset by **character class**, never by observed distinct-character count.
 
 ---
 
