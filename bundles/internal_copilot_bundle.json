@@ -1,10 +1,9 @@
 {
   "policy_name": "internal-employee-copilot",
   "policy_version": "v1.0.0",
-  "policy_hash": "0cb97cf2742d2543aa440ce042f46426d0c85ba8fc58ea2ed0daef92d1b26232",
-  "compiled_at": "2026-08-29T12:53:11.463041+00:00",
+  "policy_hash": "1a4993b75b37a479ee26907aaaa458071a4992aa62472ab080058b76bd635d06",
+  "compiled_at": "2026-08-30T16:15:54.911935+00:00",
   "description": "Internal enterprise employee assistant.",
-  "latency_budget_ms": 400,
   "t2_enabled": false,
   "pii_mode": "warn-and-confirm",
   "fail_mode": "fail_open",
@@ -15,15 +14,64 @@
   "toxicity_threshold": 0.7,
   "low_band": 0.3,
   "high_band": 0.7,
-  "cache_threshold": 0.85,
-  "detector_weights": {
-    "t0": 0.4,
-    "pii": 0.2,
-    "grounding": 0.2,
-    "toxicity": 0.2
+  "cache_threshold": 0.9,
+  "detector_critical_thresholds": {
+    "pii": 0.9,
+    "grounding": 0.9,
+    "toxicity": 0.95
   },
+  "t0_severity_scores": {
+    "hard": 1.0,
+    "high": 0.75,
+    "medium": 0.4,
+    "low": 0.15
+  },
+  "t0_aggregation": "max",
+  "t0_floor_severity": "high",
+  "blocklist_terms": [],
+  "secret_min_length": 24,
+  "secret_entropy_ratio_threshold": 0.9,
+  "ner_label_confidence": {
+    "PERSON": 0.85,
+    "GPE": 0.75,
+    "ORG": 0.7
+  },
+  "pii_aggregation": "max",
+  "grounding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "toxicity_model": "unitary/toxic-bert",
+  "grounding_min_claim_tokens": 6,
+  "toxicity_label_weights": {
+    "identity_attack": 1.0,
+    "threat": 1.0,
+    "severe_toxicity": 1.0,
+    "insult": 0.7,
+    "obscene": 0.5,
+    "toxicity": 0.6
+  },
+  "injection_threshold": 0.7,
+  "injection_action": "flag",
+  "injection_evasion_penalty": 0.15,
+  "input_risk_tightening": 0.5,
   "locked_fields": [
+    "cache_threshold",
+    "caching_enabled",
+    "detector_critical_thresholds",
+    "fail_mode",
+    "grounding_model",
+    "grounding_threshold",
+    "high_band",
+    "injection_action",
+    "injection_evasion_penalty",
+    "injection_threshold",
+    "input_risk_tightening",
+    "low_band",
     "pii_threshold",
-    "grounding_threshold"
+    "secret_entropy_ratio_threshold",
+    "secret_min_length",
+    "t0_floor_severity",
+    "t0_severity_scores",
+    "toxicity_label_weights",
+    "toxicity_model",
+    "toxicity_threshold"
   ]
 }

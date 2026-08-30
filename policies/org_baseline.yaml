@@ -5,6 +5,12 @@ policy_name: org-baseline
 policy_version: v1.0.0
 description: Enterprise-wide baseline security & privacy guardrails
 
+# Failure posture. SET here, not merely locked: resolve_policy() only compares a locked
+# field when the key is present in the base dump, so locking an unset field is a silent
+# no-op. fail_open is the loosest rung of ENUM_STRICTNESS, so tenants may tighten to
+# fail_closed and can never loosen.
+fail_mode: fail_open
+
 # Default thresholds
 pii_threshold: 0.8
 grounding_threshold: 0.6
@@ -14,17 +20,127 @@ toxicity_threshold: 0.7
 low_band: 0.3
 high_band: 0.7
 
-# Semantic cache default
+# Semantic cache. Both fields are SET here, not merely listed in locked_fields, because
+# resolve_policy() only compares a locked field present in the base dump (P6).
+#
+# cache_threshold is a safety lever wearing a performance lever's clothes. A cache hit
+# skips the model call, T1, T2 and fusion, so the threshold decides how different a
+# prompt may be before a past verdict is reused for it. Unlocked, a tenant could set 0.1
+# and serve essentially arbitrary stored answers. See docs/SEMANTIC_CACHE.md
+caching_enabled: true
 cache_threshold: 0.90
 
-# Default detector weights for risk fusion
-detector_weights:
-  t0: 0.4
-  pii: 0.2
-  grounding: 0.2
-  toxicity: 0.2
+# There are deliberately no detector weights. Fused risk is the MAXIMUM normalized
+# detector score - the worst axis is the risk. Averaging let a clean check on one axis
+# dilute a real finding on another, and made the answer depend on how many detectors
+# happened to run. Sensitivity per axis is expressed by the thresholds below, and
+# "severe enough to block alone" by detector_critical_thresholds.
+
+# Per-detector critical floors, on the NORMALIZED S scale (0.5 == detection threshold).
+# A detector reaching its critical value floors fused risk at high_band regardless of
+# weights. Without this, no single T1 detector can trigger any action: a 99%-confidence
+# toxic response fuses to 0.197 and resolves to ALLOW.
+detector_critical_thresholds:
+  pii: 0.90
+  grounding: 0.90
+  toxicity: 0.95
+
+# Tier 0 emits categorical severities rather than threshold-normalized scores.
+t0_severity_scores:
+  hard: 1.0
+  high: 0.75
+  medium: 0.40
+  low: 0.15
+t0_aggregation: max
+
+# A T0 finding at or above this severity floors fused risk at high_band, so it cannot be
+# diluted into REDACT by the t0 weight. Track 2 generic secrets are entropy heuristics,
+# not determinations, so they emit 'high' rather than 'hard' - they reach BLOCK through
+# this floor instead of vetoing the cascade. See docs/TIER_0.md (T0-1).
+t0_floor_severity: high
+
+# Tier 0 secret detection
+secret_min_length: 24
+secret_entropy_ratio_threshold: 0.9
+blocklist_terms: []
+
+# Tier 1 NER: spaCy exposes no per-entity confidence, so label reliability is
+# supplied here and is a calibration target for the Learning Plane.
+ner_label_confidence:
+  PERSON: 0.85
+  GPE: 0.75
+  ORG: 0.70
+pii_aggregation: max
+
+# Grounding and toxicity model identity. A threshold means nothing without pinning the
+# scale it was measured on - swap the model and 0.6 silently enforces something else
+# while policy_hash stays identical. Immutable: no ordering on model identity, so no
+# "stricter" direction exists to enforce. See docs/TIER_1.md (T1-1).
+grounding_model: sentence-transformers/all-MiniLM-L6-v2
+toxicity_model: unitary/toxic-bert
+# Non-claim sentences ("Happy to help.") have no ground truth and would fire on almost
+# every response under worst-sentence scoring; this is the claim filter. NOT locked -
+# see docs/TIER_1.md §2A: it's a sensitivity knob, not a safety-critical one.
+grounding_min_claim_tokens: 6
+# Detoxify/toxic-bert emits six unequal labels. Raw = max(P_label * weight_label),
+# read directly by max-aggregation fusion - zeroing an entry silences that label
+# outright rather than diluting it (docs/TIER_1.md T1-6).
+toxicity_label_weights:
+  identity_attack: 1.0
+  threat: 1.0
+  severe_toxicity: 1.0
+  insult: 0.7
+  obscene: 0.5
+  toxicity: 0.6
+
+# Input Gate: prompt injection.
+# There is no 'sanitize' action. Lexical removal of a matched injection span forwards
+# the remainder of the attack, so the ladder is allow | flag | block. 'flag' proceeds
+# with the prompt UNMODIFIED and routes the injection score into risk fusion, which
+# tightens the output cascade. See docs/INPUT_GATE.md
+#
+# NOTE: both values are set here, not merely listed in locked_fields. A field that is
+# locked but unset in this baseline is never compared against anything, so the lock
+# would silently do nothing.
+injection_threshold: 0.7
+injection_action: flag
+injection_evasion_penalty: 0.15
+
+# A FLAGged input contracts the output risk bands by this fraction, scaled by the
+# injection score. This is what 'flag' actually does - see docs/RISK_FUSION.md
+input_risk_tightening: 0.5
 
 # Fields locked by enterprise compliance - inner layers can ONLY tighten these fields
 locked_fields:
   - pii_threshold
   - grounding_threshold
+  - toxicity_threshold
+  - low_band
+  - high_band
+  - injection_threshold
+  - injection_action
+  - injection_evasion_penalty
+  - input_risk_tightening
+  - fail_mode
+  - t0_floor_severity
+  # §8C of t0_deterministic_checks.md: without these a tenant quietly disables generic
+  # secret detection by raising the ratio to 0.99 or the length floor out of range.
+  - secret_min_length
+  - secret_entropy_ratio_threshold
+  # Maps, compared key-by-key with a removal guard (P4c). Both are load-bearing:
+  # critical thresholds are what let a single detector escalate, and t0_severity_scores
+  # is read directly by max-aggregation fusion rather than diluted by a weight.
+  - detector_critical_thresholds
+  - t0_severity_scores
+  - toxicity_label_weights
+  # Immutable: swapping the model isn't stricter or looser, it's a different scale
+  # entirely. See docs/TIER_1.md (T1-1).
+  - grounding_model
+  - toxicity_model
+  # A cache hit is a decision to skip the checks. Both halves of that decision are the
+  # org's to make: tenants may disable caching or demand a closer match, never the
+  # reverse. internal_copilot shipped cache_threshold 0.85 against this 0.90 baseline
+  # until this lock existed, and at 0.85 the measured similarity between "can I get a
+  # refund" and "can I NOT get a refund" (0.853) is a HIT.
+  - caching_enabled
+  - cache_threshold

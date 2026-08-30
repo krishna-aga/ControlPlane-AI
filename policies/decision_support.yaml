@@ -1,11 +1,10 @@
 # Regulated Decision Support Tool Policy
-# Profile B: Strict safety, 800ms budget, T2 LLM-as-a-judge enabled, block-and-explain PII mode, fail-closed.
+# Profile B: Strict safety, T2 LLM-as-a-judge enabled, block-and-explain PII mode, fail-closed.
 
 policy_name: decision-support-tool
 policy_version: v1.0.0
 description: High-compliance regulated workflow decision support tool.
 
-latency_budget_ms: 800
 t2_enabled: true
 pii_mode: block-and-explain
 fail_mode: fail_closed
@@ -14,3 +13,9 @@ caching_enabled: false
 
 # Tightened PII threshold (0.5 is stricter than baseline 0.8 -> allowed under strict exception model)
 pii_threshold: 0.5
+
+# Regulated workflow: an injection attempt is refused outright rather than flagged
+# through to the model. Both fields tighten against the locked baseline
+# (flag -> block, 0.7 -> 0.5), which the strict exception model permits.
+injection_threshold: 0.5
+injection_action: block

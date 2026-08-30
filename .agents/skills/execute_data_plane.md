@@ -1,5 +1,16 @@
 # Skill: Execute Data Plane Pipeline (`execute_data_plane`)
 
+> **IMPLEMENTED — see [`docs/GATEWAY.md`](../../docs/GATEWAY.md).** The signature below
+> is superseded: the gateway owns upstream payload assembly, so it takes the tenant's
+> `messages`, `system_prompt` and `context_docs` as separate parts and builds the call
+> itself (canary planting requires the system role). BYOK `credentials` arrive per
+> request. Semantic cache and complexity router are out of prototype scope.
+>
+> ```python
+> process_request(messages, bundle_path, session_id, credentials,
+>                 system_prompt="", context_docs=None)
+> ```
+
 ## Trigger / Objective
 Intercept an incoming GenAI prompt and context docs, evaluate real-time safety via a multi-tier cascade (T0 $\rightarrow$ T1 $\rightarrow$ optional T2), perform semantic caching and BYOK model calls, fuse detector scores into a graded action, and log telemetry to the immutable audit ledger.
 
@@ -29,7 +40,7 @@ result = await process_request(
 ```
 
 ## Pipeline Execution Steps
-1. **Load Bundle & Validate Budget:** Read `latency_budget_ms`, `t2_enabled`, `pii_mode`, `fail_mode`.
+1. **Load Bundle & Verify Hash:** Read `t2_enabled`, `pii_mode`, `fail_mode`, `injection_action`. There is no latency budget — see `docs/NO_LATENCY_BUDGET.md`.
 2. **Input Gate:** Prompt injection check + PII redaction (`redact-and-proceed` / `block-and-explain`).
 3. **Semantic Cache Check:** Check cache by key `(tenant_id, scope, policy_hash, prompt_embedding)`. Return $\sim 8\text{ ms}$ hit if valid.
 4. **Upstream Model Call (BYOK):** Call model API; stream monitor cuts off runaway tokens or repetition loops.
@@ -42,5 +53,5 @@ result = await process_request(
 
 ## Validation Checks
 1. No raw PII stored in ledger output.
-2. Hard detector timeouts strictly trigger `bundle.fail_mode` (`fail_open` vs `fail_closed`).
-3. Total pipeline latency stays within `latency_budget_ms`.
+2. Detector *exceptions* and model-call failures trigger `bundle.fail_mode` (`fail_open` vs `fail_closed`). There are no timeouts.
+3. Per-stage `latency_ms` is measured and recorded in every ledger row — reported, never negotiated.

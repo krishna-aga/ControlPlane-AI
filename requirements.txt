@@ -5,3 +5,20 @@ pyyaml>=6.0
 
 # Pydantic schema validation for Control Plane & Data Plane
 pydantic>=2.0
+
+# Learning Plane demo UI (streamlit run learning_plane/app.py)
+streamlit>=1.60
+pandas>=2.0
+
+# Tier 1 detectors: grounding (sentence-transformers/all-MiniLM-L6-v2) and toxicity
+# (unitary/toxic-bert) - see docs/TIER_1.md. Install torch from the CPU wheel index
+# first or this pulls a much larger CUDA build:
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+#   pip install sentence-transformers transformers
+# torchvision itself is unused (no vision models here) - it's a workaround for a
+# transformers lazy-import quirk that unittest's assertWarns triggers; see
+# tests/test_control_plane.py's note near InertCriticalThresholdWarning.
+torch>=2.0
+torchvision
+sentence-transformers>=3.0
+transformers>=4.40

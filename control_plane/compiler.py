@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import warnings
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -41,7 +42,13 @@ def compile_bundle(
     base_policy = load_yaml_policy(base_policy_path)
     child_policy = load_yaml_policy(policy_path)
 
-    resolved = resolve_policy(base_policy, child_policy)
+    # T1-8: resolve_policy warns (never rejects) when a critical threshold can never
+    # fire on its own - legal, but worth a compile-time nudge rather than silence.
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        resolved = resolve_policy(base_policy, child_policy)
+    for w in caught:
+        print(f"[ControlPlane Compiler] Warning: {w.message}")
 
     if pin_version:
         resolved["policy_version"] = pin_version
