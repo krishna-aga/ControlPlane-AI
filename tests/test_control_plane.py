@@ -130,6 +130,64 @@ class TestLockingDirection(unittest.TestCase):
             resolve_policy(base, PolicyConfig(pii_mode="warn-and-confirm"))
 
 
+class TestInjectionPolicy(unittest.TestCase):
+    """
+    Input Gate policy fields. injection_action is a three-rung ladder
+    (allow -> flag -> block) with no 'sanitize': lexical removal of a matched
+    injection span forwards the remainder of the attack. 'flag' proceeds with the
+    prompt unmodified and routes the score into fusion. See docs/INPUT_GATE.md
+    """
+
+    def _baseline(self):
+        return load_yaml_policy("policies/org_baseline.yaml")
+
+    def test_injection_action_tightening_allowed(self):
+        resolved = resolve_policy(self._baseline(), PolicyConfig(injection_action="block"))
+        self.assertEqual(resolved["injection_action"], "block")
+
+    def test_injection_action_loosening_rejected(self):
+        with self.assertRaises(PolicyLockingError):
+            resolve_policy(self._baseline(), PolicyConfig(injection_action="allow"))
+
+    def test_injection_threshold_tightening_allowed(self):
+        """injection_threshold is a risk ceiling -> lowering catches more -> stricter."""
+        resolved = resolve_policy(self._baseline(), PolicyConfig(injection_threshold=0.4))
+        self.assertEqual(resolved["injection_threshold"], 0.4)
+
+    def test_injection_threshold_loosening_rejected(self):
+        with self.assertRaises(PolicyLockingError):
+            resolve_policy(self._baseline(), PolicyConfig(injection_threshold=0.95))
+
+    def test_baseline_sets_every_field_it_locks(self):
+        """
+        A field listed in locked_fields but never assigned in the baseline is skipped
+        by the strictness check entirely (resolve_policy only compares when the key is
+        present in the base dump), so the lock would silently do nothing. Guard the
+        whole baseline, not just the injection fields.
+        """
+        baseline = self._baseline()
+        assigned = baseline.model_dump(exclude_unset=True)
+        for field in baseline.locked_fields:
+            with self.subTest(field=field):
+                self.assertIn(
+                    field, assigned,
+                    f"'{field}' is locked but unset in org_baseline.yaml - the lock is a no-op",
+                )
+
+    def test_personas_resolve_expected_injection_policy(self):
+        expected = {
+            "customer_support": ("flag", 0.7),
+            "decision_support": ("block", 0.5),
+            "internal_copilot": ("flag", 0.7),
+        }
+        baseline = self._baseline()
+        for persona, (action, threshold) in expected.items():
+            with self.subTest(persona=persona):
+                resolved = resolve_policy(baseline, load_yaml_policy(f"policies/{persona}.yaml"))
+                self.assertEqual(resolved["injection_action"], action)
+                self.assertEqual(resolved["injection_threshold"], threshold)
+
+
 class TestStructuralValidators(unittest.TestCase):
     """Regression tests for P5: configurations that previously compiled but should not."""
 

@@ -54,6 +54,19 @@ ner_label_confidence:
   ORG: 0.70
 pii_aggregation: max
 
+# Input Gate: prompt injection.
+# There is no 'sanitize' action. Lexical removal of a matched injection span forwards
+# the remainder of the attack, so the ladder is allow | flag | block. 'flag' proceeds
+# with the prompt UNMODIFIED and routes the injection score into risk fusion, which
+# tightens the output cascade. See docs/INPUT_GATE.md
+#
+# NOTE: both values are set here, not merely listed in locked_fields. A field that is
+# locked but unset in this baseline is never compared against anything, so the lock
+# would silently do nothing.
+injection_threshold: 0.7
+injection_action: flag
+injection_evasion_penalty: 0.15
+
 # Fields locked by enterprise compliance - inner layers can ONLY tighten these fields
 locked_fields:
   - pii_threshold
@@ -61,3 +74,6 @@ locked_fields:
   - toxicity_threshold
   - low_band
   - high_band
+  - injection_threshold
+  - injection_action
+  - injection_evasion_penalty

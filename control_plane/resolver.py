@@ -30,6 +30,7 @@ LOWER_IS_STRICTER = {
     "high_band",
     "secret_entropy_ratio_threshold",
     "secret_min_length",
+    "injection_threshold",
 }
 
 # Floors: demanding a HIGHER value is stricter.
@@ -40,6 +41,8 @@ LOWER_IS_STRICTER = {
 HIGHER_IS_STRICTER = {
     "latency_budget_ms",
     "grounding_threshold",
+    # A larger penalty adds more risk for a disguised prompt -> stricter.
+    "injection_evasion_penalty",
 }
 
 # Booleans, by which value is the safer one.
@@ -51,6 +54,10 @@ BOOL_FALSE_IS_STRICTER = {"allow_downrouting", "caching_enabled"}
 ENUM_STRICTNESS = {
     "pii_mode": ["warn-and-confirm", "redact-and-proceed", "block-and-explain"],
     "fail_mode": ["fail_open", "fail_closed"],
+    # 'flag' does not edit the prompt - it raises the session risk posture and feeds
+    # fusion, so the output cascade runs stricter. There is no 'sanitize' rung: lexical
+    # removal of an injection forwards the remainder of the attack. See docs/INPUT_GATE.md
+    "injection_action": ["allow", "flag", "block"],
 }
 
 
@@ -193,6 +200,9 @@ def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:
         "secret_entropy_ratio_threshold": 0.9,
         "ner_label_confidence": {"PERSON": 0.85, "GPE": 0.75, "ORG": 0.70},
         "pii_aggregation": "max",
+        "injection_threshold": 0.7,
+        "injection_action": "flag",
+        "injection_evasion_penalty": 0.15,
         "locked_fields": [],
     }
     for k, v in defaults.items():

@@ -1,5 +1,23 @@
 # Skill: Input Gate Heuristic & Regex Scanning
 
+> **SUPERSEDED — see [`docs/INPUT_GATE.md`](../../../docs/INPUT_GATE.md).**
+> The pipeline below is retained for provenance. Three defects in it were fixed during
+> implementation and the code does NOT follow this file:
+>
+> 1. `normalize_text()` appends decoded base64 inline and its output is returned as
+>    `sanitized_prompt` — the value forwarded upstream. That hands the model a decoded
+>    payload it was never sent. Canonical text is now scan-only and never forwarded.
+> 2. Injection findings are routed through `pii_mode`, and `redact-and-proceed` deletes
+>    the matched span — which forwards the remainder of the attack. Replaced by the
+>    locked bundle fields `injection_action` (`allow|flag|block`, no `sanitize` rung),
+>    `injection_threshold` and `injection_evasion_penalty`.
+> 3. Normalizing before PII detection shifts every character offset, so the placeholder
+>    map no longer indexes the forwarded string (input-side twin of T0-5).
+>
+> Implementation: `data_plane/normalizer.py`, `data_plane/detectors/injection.py`,
+> `data_plane/detectors/pii.py`, `data_plane/input_gate.py`.
+> Tests: `tests/test_input_gate.py`.
+
 ## 1. Skill Overview
 * **Skill Identifier:** `skill_input_gate_heuristics`
 * **Layer:** Data Plane (Input Gate Pipeline)[cite: 2]

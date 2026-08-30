@@ -26,9 +26,9 @@
 
 ### C. Compiled Bundles (`bundles/`)
 Generated, immutable JSON bundles ready for Data Plane loading:
-* `bundles/customer_support_bundle.json` (`policy_hash: 86aab9a168bbb66f26768340f6a6bbb1d1530c6e444deba23bce84ecc61bb67f`)
-* `bundles/decision_support_bundle.json` (`policy_hash: 641fe1612a860997445fc8773ae5113fbe2c9374bb23d1d31e585e3a430da716`)
-* `bundles/internal_copilot_bundle.json` (`policy_hash: f1123299b9d788c81b76feb08c2ddd67fa89f610678fd694da189cd08e62b76e`)
+* `bundles/customer_support_bundle.json` (`policy_hash: 00c6376eb4a17160f9fd30f9ab901d3583cd85d4db409dad75c27b2119e08eae`)
+* `bundles/decision_support_bundle.json` (`policy_hash: c9f44190e17e05ab8e450756336813cc52fe48ad309893afdeab495e8dd574cb`)
+* `bundles/internal_copilot_bundle.json` (`policy_hash: e62f88268c077d44e1f167b609c4dc078b3e49f96bbbca80a2b874756b1de86a`)
 
 > Hashes changed twice: first when the bundles gained `detector_critical_thresholds`,
 > `t0_severity_scores`, and the T0/T1 detector configuration fields
