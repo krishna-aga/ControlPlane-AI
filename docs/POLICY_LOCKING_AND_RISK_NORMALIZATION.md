@@ -29,6 +29,10 @@ This document captures a design review of the policy locking model and the detec
 | **T0-6** | Blocklist latency does not hold at realistic list sizes | Performance | Open |
 | **T0-7** | Hard-override short-circuit makes T0's own accuracy unmeasurable | Observability | Open |
 | **T0-8** | Canary matching is defeated by transformed exfiltration | Accepted limitation | Document |
+| **P6** | A locked field the baseline never *sets* is a silent no-op | Policy hole | Open |
+| **P7** | `detector_weights` accepts negative values and unknown detector names | Missing validation | Open |
+| **P8** | Unknown YAML keys are silently ignored (`extra="ignore"`) | Missing validation | Open |
+| **N4** | Weight renormalization makes the same finding score differently depending on which *other* detectors ran | Design defect | Open |
 
 > **Two defects found after this register was written, recorded elsewhere:**
 > the `policy_hash` was non-reproducible across processes (`list(set(...))` on
@@ -756,6 +760,110 @@ The 5 tests in [`tests/test_control_plane.py`](file:///home/krishna/Projects/Con
 18. Add the canary completeness caveat to `t0_deterministic_checks.md` §4 (T0-8).
 
 ---
+
+# Part D — Defects found after the original review
+
+Recorded here so they stop living only in conversation. P6–P8 were surfaced by probing
+the resolver; N4 by tracing fusion through the gateway.
+
+## P6. A locked field the baseline never *sets* is a silent no-op
+
+`resolve_policy()` only validates a locked field when the key is present in the base
+dump:
+
+```python
+if key in locked_fields and key in resolved:      # <- second condition
+```
+
+`_apply_mandatory_defaults()` runs *after* that loop, so a field listed in
+`locked_fields` but never assigned in `org_baseline.yaml` is skipped entirely.
+
+```text
+base locks cache_threshold but does not set it
+child sets cache_threshold: 0.01          -> ACCEPTED
+```
+
+Currently latent — every locked field is now assigned, guarded by
+`test_baseline_sets_every_field_it_locks`. But the guard protects today's baseline; it
+does not stop the next person locking a new field and getting nothing. **Fix:** resolve
+defaults before the locking loop, or reject locking a field the baseline leaves unset.
+
+## P7. `detector_weights` validation only checks the sum
+
+`_validate_weight_integrity()` verifies the total is `1.0` and nothing else:
+
+```text
+detector_weights: {t0: 2.0, pii: -1.0}    -> ACCEPTED   (sums to 1.0)
+detector_weights: {nonsense: 1.0}         -> ACCEPTED   (no such detector)
+```
+
+A negative weight makes a detector's evidence *reduce* fused risk. An unknown key is
+silently dead weight. **Fix:** require non-negative values, and check the key set against
+the known detectors.
+
+## P8. Unknown YAML keys are silently ignored
+
+`PolicyConfig` uses Pydantic's default `extra="ignore"`, so a typo compiles clean with
+baseline enforcement silently intact:
+
+```text
+pii_treshold: 0.1     -> dropped, no warning; pii_threshold stays 0.8
+```
+
+For a policy-authoring tool whose whole value is that the file *is* the enforcement, this
+is the wrong default. **Fix:** `model_config = ConfigDict(extra="forbid")`.
+
+## N4. Renormalization makes a finding's weight depend on the applicable set
+
+Weights must sum to `1.0`, so a detector's share depends on how many others ran. Measured
+on one blocklist hit (`medium`, `S_t0 = 0.40`) with nothing else wrong:
+
+```text
+scenario                    t0 weight  t0 gives   fused   action
+only T0 ran                      1.00     0.400   0.400   REDACT
+T0 + toxicity ran clean          0.67     0.267   0.279   ALLOW
+T0 + tox + pii clean             0.50     0.200   0.225   ALLOW
+all four ran, all clean          0.40     0.160   0.192   ALLOW
+```
+
+**The finding never changed. Its weight did.** The same output is `REDACT` or `ALLOW`
+depending on which *other* detectors happened to run — operator-visible
+non-determinism, and the perverse property that **running more safety checks makes a
+given problem score lower**.
+
+### Root cause
+
+Fused risk is a weighted *average*, and averages dilute. But detectors measure
+**orthogonal** risks: a clean toxicity score is not evidence that a blocklisted term is
+acceptable. A car whose brakes fail is not 25% defective because the lights, tyres and
+horn are fine.
+
+Renormalization was added for a real reason — an inapplicable detector (no RAG context,
+so no grounding signal) would otherwise carry dead weight. But the arithmetic cannot
+distinguish:
+
+* *"grounding is inapplicable"* — no evidence either way → renormalizing is right
+* *"toxicity ran and found nothing"* — evidence about a different axis → renormalizing is wrong
+
+Critical floors protect strong signals from this. Mid-strength findings sit exactly in
+the exposed range.
+
+### Options
+
+1. **Monotonic aggregation (noisy-or)** — `R = 1 − Π(1 − wᵢSᵢ)`. Adding a clean detector
+   can never lower risk. `t0_aggregation` already offers `max | noisy_or`, so the concept
+   exists in the bundle; it is simply not applied at the fusion level.
+2. **Weight only detectors that fired** (`S ≥ 0.5`). Clean detectors stop diluting, but
+   one mid-strength finding then always dominates.
+3. **Extend floors downward** to `medium`. Floors then do all the work and weights become
+   decorative.
+4. **Accept and document** — argue the average is intentional.
+
+> A second issue sits underneath and must be decided separately: `medium × w_t0 = 0.16`
+> is below `low_band = 0.3` under *any* aggregation, so a blocklist-only hit would become
+> *consistently* `ALLOW`. That is open item #7 below — is a blocklist hit meant to be
+> actionable, or is it telemetry?
+
 
 # 7. Open Items
 

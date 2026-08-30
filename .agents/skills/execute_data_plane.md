@@ -1,5 +1,16 @@
 # Skill: Execute Data Plane Pipeline (`execute_data_plane`)
 
+> **IMPLEMENTED — see [`docs/GATEWAY.md`](../../docs/GATEWAY.md).** The signature below
+> is superseded: the gateway owns upstream payload assembly, so it takes the tenant's
+> `messages`, `system_prompt` and `context_docs` as separate parts and builds the call
+> itself (canary planting requires the system role). BYOK `credentials` arrive per
+> request. Semantic cache and complexity router are out of prototype scope.
+>
+> ```python
+> process_request(messages, bundle_path, session_id, credentials,
+>                 system_prompt="", context_docs=None)
+> ```
+
 ## Trigger / Objective
 Intercept an incoming GenAI prompt and context docs, evaluate real-time safety via a multi-tier cascade (T0 $\rightarrow$ T1 $\rightarrow$ optional T2), perform semantic caching and BYOK model calls, fuse detector scores into a graded action, and log telemetry to the immutable audit ledger.
 

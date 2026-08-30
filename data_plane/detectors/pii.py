@@ -76,7 +76,11 @@ def verhoeff_valid(digits: str) -> bool:
 _PATTERNS = [
     (10, "EMAIL",       0.95, None,           r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
     (20, "SECRET",      0.99, None,           r"\b(?:sk-[A-Za-z0-9]{32,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36})\b"),
-    (30, "CREDIT_CARD", 1.00, "luhn",         r"\b(?:\d[ -]?){13,19}\b"),
+    # Anchored on a digit at BOTH ends. `(?:\d[ -]?){13,19}` lets the final repetition
+    # end on a separator, so the span ran one character past the number - which silently
+    # ate the following space out of the forwarded prompt and left a stray one in the
+    # de-anonymized reply.
+    (30, "CREDIT_CARD", 1.00, "luhn",         r"\b\d(?:[ -]?\d){12,18}\b"),
     (40, "AADHAAR",     1.00, "verhoeff",     r"\b[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}\b"),
     (50, "SSN",         0.90, None,           r"\b\d{3}-\d{2}-\d{4}\b"),
     (60, "PAN",         0.90, None,           r"\b[A-Z]{5}\d{4}[A-Z]\b"),

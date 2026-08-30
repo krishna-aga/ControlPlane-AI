@@ -160,6 +160,21 @@ class TestPIIPrecedenceAndSpans(unittest.TestCase):
         self.assertNotIn("john@test.com", forward)
         self.assertEqual(deanonymize(forward, restore), prompt)
 
+    def test_span_stops_at_the_last_digit(self):
+        """
+        Regression: the card pattern allowed its final repetition to end on a separator,
+        so the span ran one character past the number. That ate the following space out
+        of the forwarded prompt and left a stray one in the de-anonymized reply -
+        invisible in isolation, visible the moment the gateway wired it end to end.
+        """
+        prompt = "My card 4111111111111111 was charged twice"
+        finding = [f for f in scan_pii(prompt) if f.entity_type == "CREDIT_CARD"][0]
+        self.assertEqual(prompt[finding.span[0]:finding.span[1]], "4111111111111111")
+
+        forward, restore = redact(prompt, scan_pii(prompt))
+        self.assertIn("[CREDIT_CARD_1] was charged", forward)
+        self.assertEqual(deanonymize(forward, restore), prompt)
+
     def test_repeated_value_shares_one_placeholder(self):
         prompt = "mail bob@corp.io then bob@corp.io again"
         forward, restore = redact(prompt, scan_pii(prompt))
