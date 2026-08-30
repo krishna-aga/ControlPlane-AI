@@ -175,6 +175,13 @@ novel identifier in the output   → model_generated      (training-data leakage
 
 Only `model_generated` findings reach fusion.
 
+> **A fourth value is specified but not built.** `echoed_from_context` — the entity
+> appears in the RAG chunks the gateway sent — together with a `context_exonerates`
+> policy field that decides which entity types corpus origin forgives. A corpus-sourced
+> *organisation name* is safe; a corpus-sourced *credit card* is not, because the risk is
+> exposure rather than fabrication. See
+> [`ORIGIN_AND_EXONERATION.md`](ORIGIN_AND_EXONERATION.md).
+
 ### T0-8 — canary limitation, documented not engineered
 
 Canary matching detects **naive** exfiltration — verbatim or truncated reproduction. It

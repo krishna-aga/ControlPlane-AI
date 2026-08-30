@@ -227,6 +227,11 @@ graded middle is the only place a ~600 ms judge changes an outcome.
 
 ## 8. Open
 
+* **Context origin is not resolved.** Findings echoed from the retrieved documents are
+  currently indistinguishable from ones the model invented, so NER would redact a support
+  bot's own company name. Designed in
+  [`ORIGIN_AND_EXONERATION.md`](ORIGIN_AND_EXONERATION.md), not built.
+
 * **Masking spans must be applied before de-anonymization** (T0-5). `REDACT` is decided
   here but executed by the output stage, which does not exist yet.
 * **`REGENERATE` has no retry budget.** Nothing bounds the loop if a regenerated answer
