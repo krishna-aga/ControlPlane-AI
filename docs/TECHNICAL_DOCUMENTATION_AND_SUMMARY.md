@@ -53,7 +53,7 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
 * `test_no_latency_budget_field_exists` / `test_fail_mode_is_locked_and_tightenable_only`: latency is no longer a policy lever, and `fail_mode` is set + locked at its loosest rung so tenants may only tighten. See `docs/NO_LATENCY_BUDGET.md`.
 * `test_hash_reproducibility`: Asserts identical parameters produce identical SHA-256 hashes.
 * `TestLockingDirection` (5 tests): Regression cover for **P1** — `grounding_threshold` is a similarity *floor*, so raising it is stricter; the lock was previously inverted. Also covers newly-locked `toxicity_threshold` and enum tightening.
-* `TestStructuralValidators` (4 tests): Rejects inverted risk bands, `detector_weights` not summing to $1.0$, and critical thresholds below the detection midpoint.
+* `TestStructuralValidators`: Rejects inverted risk bands and critical thresholds below the normalized detection midpoint. (The `detector_weights` sum check went away with the field — fusion now takes the max normalized score; see `docs/RISK_FUSION.md` §5.)
 * `TestHashDeterminism` (3 tests): Regression cover for the `policy_hash` reproducibility
   defect. Compiles each persona in **subprocesses under five different `PYTHONHASHSEED`
   values** and asserts a single hash, asserts `locked_fields` is canonically ordered, and
@@ -61,7 +61,7 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
   (`compile_bundle.md` Validation Check 3). `test_hash_reproducibility` could not catch
   this — it hashes two hand-written dicts inside one interpreter, and the defect only
   appears across processes.
-* **Test Status:** 138/138 tests passing (control plane 29, input gate 14, fusion 28, tier 0 44, gateway 23).
+* **Test Status:** 142/142 tests passing.
 
 ---
 

@@ -13,10 +13,16 @@ defect the register found:
     Plane's calibration sweep was impossible. Replaced by a piecewise map where
     S = 0.5 is exactly the detection threshold for every detector (N1).
 
-  * Weights alone cannot make a detector act. Measured: toxicity at P=0.99 with nothing
-    else firing fuses to 0.197 -> ALLOW under every persona. Critical floors are what
-    restore a single detector's ability to escalate, independent of weight arithmetic
-    (P4).
+  * Fused risk is the MAXIMUM normalized score, not a weighted average. Averaging
+    orthogonal risks is a category error - a clean toxicity score is not evidence that a
+    blocklist hit is acceptable - and it made the result depend on how MANY detectors
+    ran. Measured under the old scheme, a 99%-confidence toxic response scored 0.983
+    when toxicity was the only applicable detector and 0.369 when three clean detectors
+    ran alongside it: a swing of 0.614 on identical output, in which more safety
+    checking made the response look safer. Taking the worst axis is both consistent and
+    the right question - "how risky is this output" is the worst thing found, not the
+    average across the things checked. This is P4's conclusion ("weights should not be
+    safety-critical at all") carried to its end: `detector_weights` is removed.
 
   * T0 is categorical, not threshold-normalized. It has no threshold, so the piecewise
     map cannot apply to it; it is scored by severity lookup and must not be assumed to
@@ -107,20 +113,9 @@ def _normalize_signals(signals: DetectorSignals, bundle: Dict) -> Tuple[Dict[str
     return normalized, raw
 
 
-def _applicable_weights(normalized: Dict[str, float], bundle: Dict) -> Dict[str, float]:
-    """
-    Restrict bundle weights to detectors that actually ran, then renormalize to sum 1.0.
-
-    Scoring an inapplicable detector as 0.0 instead would silently dilute every other
-    signal: a non-RAG request would carry grounding's weight as dead mass, dragging
-    fused risk down for reasons unrelated to safety.
-    """
-    weights = bundle.get("detector_weights", {})
-    applicable = {k: float(weights.get(k, 0.0)) for k in normalized}
-    total = sum(applicable.values())
-    if total <= 0.0:
-        return {k: 0.0 for k in applicable}
-    return {k: v / total for k, v in applicable.items()}
+def _dominant(normalized: Dict[str, float]) -> Optional[str]:
+    """The detector carrying the highest normalized score - it selects the REMEDY."""
+    return max(normalized, key=lambda k: normalized[k]) if normalized else None
 
 
 def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
@@ -131,10 +126,12 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
     input -> map to the ladder.
     """
     normalized, raw = _normalize_signals(signals, bundle)
-    weights = _applicable_weights(normalized, bundle)
 
-    contributions = {k: normalized[k] * weights[k] for k in normalized}
-    fused = sum(contributions.values())
+    # The worst axis IS the risk. A detector that ran and found nothing is evidence
+    # about a DIFFERENT axis, so it must not pull the score down; a detector that did
+    # not run at all is simply absent from the max. Both cases fall out for free, which
+    # is why this needs no applicability bookkeeping.
+    fused = max(normalized.values()) if normalized else 0.0
 
     low_band = float(bundle["low_band"])
     high_band = float(bundle["high_band"])
@@ -152,9 +149,10 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
         tightened = True
 
     # --- critical floors -------------------------------------------------------------
-    # A detector at or above its critical value floors fused risk at high_band
-    # regardless of weights. Without this no single T1 detector can escalate at all:
-    # toxicity at P=0.99 alone fuses to 0.197 and resolves to ALLOW (P4).
+    # A detector at or above its critical value floors fused risk at high_band. Under
+    # max-aggregation a strong signal already survives on its own, so floors now serve a
+    # narrower purpose: they escalate a detector that is severe on its OWN scale to the
+    # severe action even when its normalized score sits below high_band.
     critical = bundle.get("detector_critical_thresholds", {})
     fired: List[str] = []
     for detector in _T1_DETECTORS:
@@ -162,11 +160,11 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
             if normalized[detector] >= float(critical[detector]):
                 fired.append(detector)
 
-    # T0's floor is CATEGORICAL, compared by severity rank rather than against the
+    # T0's floor is CATEGORICAL, compared by severity RANK rather than against the
     # normalized S scale - T0 has no threshold and so carries none of the 0.5-midpoint
-    # semantics that govern T1 (T0-2). Without it a `high` T0 finding is diluted by the
-    # t0 weight: a leaked credential fuses to 0.33 and resolves to REDACT the moment any
-    # T1 detector also runs. That is the P4 defect reappearing on Tier 0.
+    # semantics that govern T1 (T0-2). It survives the move to max-aggregation because a
+    # `high` severity scores 0.75, which is below high_band; the floor is what carries a
+    # leaked credential the rest of the way to BLOCK.
     floor_severity = bundle.get("t0_floor_severity", "high")
     if signals.t0_severities and floor_severity:
         threshold_rank = severity_rank(floor_severity)
@@ -180,7 +178,7 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
 
     fused = min(max(fused, 0.0), 1.0)
 
-    dominant = max(contributions, key=lambda k: contributions[k]) if contributions else None
+    dominant = _dominant(normalized)
     action, reason = _decide_action(
         fused, low_band, high_band, normalized, dominant, fired, signals, bundle
     )
@@ -195,8 +193,6 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
         reason=reason,
         normalized=normalized,
         raw=raw,
-        weights_applied=weights,
-        contributions=contributions,
         critical_fired=fired,
         dominant_detector=dominant,
         effective_low_band=low_band,

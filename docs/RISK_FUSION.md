@@ -1,6 +1,7 @@
 # Risk Fusion & the Graded Action Ladder
 
-**Status:** Implemented. `data_plane/fusion.py`. 28 fusion tests, 69 total, passing.
+**Status:** Implemented. `data_plane/fusion.py`. Fused risk is the **maximum**
+normalized detector score; `detector_weights` was removed (§5). 142 tests passing.
 
 Implements Part B of
 [`POLICY_LOCKING_AND_RISK_NORMALIZATION.md`](POLICY_LOCKING_AND_RISK_NORMALIZATION.md) —
@@ -21,10 +22,7 @@ DetectorSignals (raw)
       └─ toxicity_prob ──► normalize(P, toxicity_threshold)
       │
       ▼
-  weights restricted to APPLICABLE detectors, renormalized to sum 1.0
-      │
-      ▼
-  R = Σ S_d · w_d
+  R = max(S_d)          ◄── the worst axis IS the risk
       │
       ├─ critical floors:  if S_d >= critical_d  →  R = max(R, high_band)
       ├─ input tightening: if flagged            →  bands ×= (1 − risk · tightening)
@@ -100,20 +98,86 @@ toxicity P=0.99 alone  →  S=0.983  critical fired  →  BLOCK
 toxicity P=0.80 alone  →  S=0.667  no floor        →  FLAG
 ```
 
-**Safety is independent of weight arithmetic.** Zeroing toxicity's weight entirely does
-not disable toxicity — guarded by `test_critical_survives_a_zeroed_weight`. This is why
-floors were chosen over the weight floors originally proposed in P4b.
+**Safety is independent of weight arithmetic** — now structurally, since there is no
+arithmetic left to game. Under max aggregation a severe detector already survives on its
+own, so the floors serve a narrower purpose: escalating a detector that is severe on its
+*own* scale to the severe action even when its normalized score sits below `high_band`.
+That is what carries a `high` T0 finding (0.75) the rest of the way to BLOCK.
 
 The band comparison is `>=`, not `>`: a floor sets risk to exactly `high_band`, and a
 strict `>` would drop it into the graded middle.
 
 ---
 
-## 5. Weight renormalization
+## 5. Max aggregation — why there are no weights
 
-Weights are restricted to detectors that actually ran, then renormalized to sum 1.0. A
-non-RAG request has no grounding signal; scoring it `0.0` would carry grounding's weight
-as dead mass and drag fused risk down for reasons unrelated to safety.
+Fused risk is the **maximum** normalized detector score. There is no `detector_weights`
+field; it was removed.
+
+### The defect it fixes
+
+A weighted average makes the result depend on **how many detectors happened to run**,
+because each detector's share is `1 / (number applicable)`. Measured under the old
+scheme on identical output:
+
+| scenario | old score | old action |
+| :--- | ---: | :--- |
+| toxicity 0.99, only detector applicable | 0.983 | BLOCK |
+| toxicity 0.99, three clean detectors alongside | **0.369** | not blocked |
+| blocklist `medium`, only detector applicable | 0.400 | REDACT |
+| blocklist `medium`, three clean detectors alongside | **0.192** | ALLOW |
+
+A swing of **0.614** on the most severe signal in the system — and in the wrong
+direction: *running more safety checks made the response look safer.* Only the critical
+floors kept the toxicity case from producing a wrong action, which meant the floors were
+carrying the system while the average was unreliable in the only range it governed.
+
+### Why averaging was the wrong operation
+
+The detectors measure **orthogonal** risks. A clean toxicity score is not evidence that a
+blocklist hit is acceptable — they are different axes. Averaging them treats "no toxicity
+found" as partial evidence that an unrelated finding is fine.
+
+"How risky is this output?" is answered by **the worst thing found**, not by the average
+across the things checked. A car with failed brakes is not 25% defective because the
+lights, tyres and horn are fine.
+
+### Measured after
+
+```
+toxicity 0.99        alone=0.983/BLOCK    +1 clean=0.983/BLOCK    +3 clean=0.983/BLOCK
+blocklist (medium)   alone=0.400/REDACT   +1 clean=0.400/REDACT   +3 clean=0.400/REDACT
+```
+
+### Two properties that now fall out for free
+
+* **An inapplicable detector is simply absent from the max.** A non-RAG request has no
+  grounding signal and needs no applicability bookkeeping — the renormalization that used
+  to handle this is gone along with the problem it created.
+* **A clean detector cannot lower the score.** Monotonic by construction.
+
+### What replaced the weights
+
+An org that cares more about one axis had a vague lever; it now has two precise ones,
+both locked:
+
+* **`pii_threshold` / `grounding_threshold` / `toxicity_threshold`** — how sensitive that
+  detector is, i.e. when it starts counting.
+* **`detector_critical_thresholds`** — how severe that detector must be to escalate on
+  its own.
+
+This is P4's own conclusion — *"weights should not be safety-critical at all"* — carried
+to its end. Removing the field also closed a hole: `_validate_weight_integrity` checked
+only that the values summed to 1.0, so `{t0: 2.0, pii: -1.0}` and `{nonsense: 1.0}` both
+compiled.
+
+### Consequence: T0 severities now matter directly
+
+Under averaging, a `medium` T0 finding was multiplied down to 0.16 and usually vanished.
+Under max it stands at its table value of **0.40**, above `low_band`, so a blocklist hit
+now consistently reaches `REDACT`. That resolves the register's open item #7 — but it
+means `t0_severity_scores` is now read directly rather than diluted, and those four
+numbers deserve a deliberate review rather than remaining the spec's estimate.
 
 ---
 
@@ -171,3 +235,6 @@ graded middle is the only place a ~600 ms judge changes an outcome.
   locking (P4c) is unimplemented — so a tenant can raise every critical value to 1.0 and
   disable the floors this document calls load-bearing, or drop a key entirely and remove
   one detector's floor.
+* **`t0_severity_scores` is read directly under max aggregation** and is likewise
+  unlocked, so the same evasion applies: setting every severity to 0.0 silences Tier 0's
+  contribution to fusion entirely. Both maps need the same fix.

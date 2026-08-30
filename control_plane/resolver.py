@@ -111,7 +111,6 @@ def resolve_policy(base_policy: PolicyConfig, child_policy: PolicyConfig) -> Dic
 
     # Structural validation of the resolved policy
     _validate_band_ordering(resolved)
-    _validate_weight_integrity(resolved)
     _validate_critical_coherence(resolved)
 
     return resolved
@@ -191,7 +190,6 @@ def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:
         "low_band": 0.3,
         "high_band": 0.7,
         "cache_threshold": 0.90,
-        "detector_weights": {"t0": 0.4, "pii": 0.2, "grounding": 0.2, "toxicity": 0.2},
         "detector_critical_thresholds": {"pii": 0.90, "grounding": 0.90, "toxicity": 0.95},
         "t0_severity_scores": {"hard": 1.0, "high": 0.75, "medium": 0.40, "low": 0.15},
         "t0_aggregation": "max",
@@ -218,17 +216,6 @@ def _validate_band_ordering(policy_dict: Dict[str, Any]) -> None:
     if low > high:
         raise ValueError(
             f"low_band ({low}) exceeds high_band ({high}); risk bands would be inverted."
-        )
-
-
-def _validate_weight_integrity(policy_dict: Dict[str, Any]) -> None:
-    """Fusion weights must sum to 1.0, else fused risk can exceed the band scale."""
-    weights = policy_dict.get("detector_weights", {})
-    total = sum(weights.values())
-    if abs(total - 1.0) > 1e-6:
-        raise ValueError(
-            f"detector_weights must sum to 1.0 (got {total}). "
-            f"Fused risk would fall outside the [0,1] band scale."
         )
 
 

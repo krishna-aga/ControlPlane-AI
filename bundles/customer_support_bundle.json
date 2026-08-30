@@ -1,8 +1,8 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "5f0a721ca93e67e67b2a1bc64f214bcb45c98c2598bf3e78e7b9d131e1aaf9f7",
-  "compiled_at": "2026-08-30T08:54:40.151344+00:00",
+  "policy_hash": "00fb3b1f3200c55af34329b25e57ba969d69c509dc2921bb951dc4229acf8541",
+  "compiled_at": "2026-08-30T09:52:22.202444+00:00",
   "description": "Optimized for fast response times and customer interaction.",
   "t2_enabled": false,
   "pii_mode": "redact-and-proceed",
@@ -15,12 +15,6 @@
   "low_band": 0.3,
   "high_band": 0.7,
   "cache_threshold": 0.9,
-  "detector_weights": {
-    "t0": 0.4,
-    "pii": 0.2,
-    "grounding": 0.2,
-    "toxicity": 0.2
-  },
   "detector_critical_thresholds": {
     "pii": 0.9,
     "grounding": 0.9,

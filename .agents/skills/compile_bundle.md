@@ -9,7 +9,7 @@ Compile 2-tier policy configuration YAML files (`org_baseline.yaml` -> `use_case
   * `policy_path` (str): Path to target use-case policy YAML (`policies/customer_support.yaml`, etc.).
   * `pin_version` (optional str): Optional version override.
 * **Outputs:**
-  * `bundle.json` containing: `policy_name`, `policy_version`, `policy_hash`, `compiled_at`, `t2_enabled`, `pii_mode`, `fail_mode`, `allow_downrouting`, `caching_enabled`, `pii_threshold`, `grounding_threshold`, `toxicity_threshold`, `low_band`, `high_band`, `cache_threshold`, `locked_fields`, `detector_weights`.
+  * `bundle.json` containing: `policy_name`, `policy_version`, `policy_hash`, `compiled_at`, `t2_enabled`, `pii_mode`, `fail_mode`, `allow_downrouting`, `caching_enabled`, `pii_threshold`, `grounding_threshold`, `toxicity_threshold`, `low_band`, `high_band`, `cache_threshold`, `locked_fields`, `detector_critical_thresholds`, `t0_severity_scores`, `t0_floor_severity`, `injection_*`. There is no `detector_weights` and no `latency_budget_ms`.
 
 ## Execution CLI Commands
 ```bash

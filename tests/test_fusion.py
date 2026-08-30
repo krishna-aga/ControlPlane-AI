@@ -112,15 +112,16 @@ class TestCriticalFloors(unittest.TestCase):
         self.assertGreaterEqual(result.fused_risk, result.effective_high_band)
         self.assertEqual(result.action, "BLOCK")
 
-    def test_critical_survives_a_zeroed_weight(self):
+    def test_severe_signal_acts_regardless_of_what_else_ran(self):
         """
-        Safety must not depend on weight arithmetic - that was the argument for floors
-        over weight floors. Zeroing toxicity's weight must not disable toxicity.
+        P4's requirement - safety must not depend on weight arithmetic - is now
+        structural rather than defended by floors: there is no arithmetic left to game.
         """
         bundle = get_bundle(BUNDLES["customer_support"])
-        bundle["detector_weights"] = {"t0": 1.0, "pii": 0.0, "grounding": 0.0, "toxicity": 0.0}
-        result = fuse(DetectorSignals(toxicity_probability=0.99), bundle)
-        self.assertEqual(result.action, "BLOCK")
+        for extra in ({}, dict(pii_confidence=0.1), dict(pii_confidence=0.1, grounding_similarity=0.95)):
+            with self.subTest(extra=sorted(extra)):
+                result = fuse(DetectorSignals(toxicity_probability=0.99, **extra), bundle)
+                self.assertEqual(result.action, "BLOCK")
 
 
 class TestTier0Scoring(unittest.TestCase):
@@ -146,42 +147,72 @@ class TestTier0Scoring(unittest.TestCase):
         self.assertGreater(many, single)
         self.assertLessEqual(many, 1.0)
 
-    def test_no_findings_scores_zero_and_is_not_weighted(self):
+    def test_no_findings_means_t0_is_absent_from_the_max(self):
         bundle = get_bundle(BUNDLES["customer_support"])
         result = fuse(DetectorSignals(toxicity_probability=0.5), bundle)
         self.assertNotIn("t0", result.normalized)
-        self.assertNotIn("t0", result.weights_applied)
 
 
-class TestWeightRenormalization(unittest.TestCase):
+class TestMaxAggregation(unittest.TestCase):
+    """
+    Fused risk is the MAXIMUM normalized score, not a weighted average.
 
-    def test_absent_detector_is_dropped_not_scored_zero(self):
-        """
-        A non-RAG request has no grounding signal. Scoring it 0.0 would carry its weight
-        as dead mass and dilute every other detector.
-        """
+    Averaging orthogonal risks is a category error - a clean toxicity score is not
+    evidence that a blocklist hit is acceptable - and it made the answer depend on how
+    many detectors happened to run. Under the old scheme a 99%-confidence toxic response
+    scored 0.983 alone and 0.369 with three clean detectors alongside: identical output,
+    a swing of 0.614, in which MORE safety checking made the response look safer.
+    """
+
+    CLEAN = dict(pii_confidence=0.1, grounding_similarity=0.95, toxicity_probability=0.05)
+
+    def test_score_is_the_worst_axis(self):
+        bundle = get_bundle(BUNDLES["customer_support"])
+        result = fuse(DetectorSignals(t0_severities=["medium"], **self.CLEAN), bundle)
+        self.assertAlmostEqual(result.fused_risk, max(result.normalized.values()), places=9)
+
+    def test_clean_detectors_never_lower_the_score(self):
+        """The headline regression: adding checks that find nothing must not help."""
+        bundle = get_bundle(BUNDLES["customer_support"])
+        alone = fuse(DetectorSignals(toxicity_probability=0.99), bundle)
+        with_clean = fuse(
+            DetectorSignals(toxicity_probability=0.99, pii_confidence=0.1,
+                            grounding_similarity=0.95), bundle)
+        self.assertAlmostEqual(alone.fused_risk, with_clean.fused_risk, places=9)
+        self.assertEqual(alone.action, with_clean.action)
+
+    def test_a_finding_scores_the_same_however_many_detectors_ran(self):
+        bundle = get_bundle(BUNDLES["customer_support"])
+        scores = [
+            fuse(DetectorSignals(t0_severities=["medium"]), bundle).fused_risk,
+            fuse(DetectorSignals(t0_severities=["medium"], toxicity_probability=0.05), bundle).fused_risk,
+            fuse(DetectorSignals(t0_severities=["medium"], **self.CLEAN), bundle).fused_risk,
+        ]
+        self.assertEqual(len(set(round(v, 9) for v in scores)), 1, f"inconsistent: {scores}")
+
+    def test_adding_a_worse_signal_raises_the_score(self):
+        bundle = get_bundle(BUNDLES["customer_support"])
+        mild = fuse(DetectorSignals(t0_severities=["low"]), bundle)
+        worse = fuse(DetectorSignals(t0_severities=["low"], toxicity_probability=0.95), bundle)
+        self.assertGreater(worse.fused_risk, mild.fused_risk)
+
+    def test_inapplicable_detector_is_simply_absent(self):
+        """A non-RAG request has no grounding signal; it must not appear at all."""
         bundle = get_bundle(BUNDLES["customer_support"])
         result = fuse(DetectorSignals(pii_confidence=0.9, toxicity_probability=0.5), bundle)
-        self.assertNotIn("grounding", result.weights_applied)
-        self.assertAlmostEqual(sum(result.weights_applied.values()), 1.0, places=9)
-
-    def test_applied_weights_always_sum_to_one(self):
-        bundle = get_bundle(BUNDLES["customer_support"])
-        cases = [
-            DetectorSignals(pii_confidence=0.5),
-            DetectorSignals(t0_severities=["high"], toxicity_probability=0.2),
-            DetectorSignals(t0_severities=["low"], pii_confidence=0.4,
-                            grounding_similarity=0.7, toxicity_probability=0.3),
-        ]
-        for i, signals in enumerate(cases):
-            with self.subTest(case=i):
-                self.assertAlmostEqual(sum(fuse(signals, bundle).weights_applied.values()), 1.0, places=9)
+        self.assertNotIn("grounding", result.normalized)
 
     def test_no_signals_at_all_is_allow(self):
         bundle = get_bundle(BUNDLES["customer_support"])
         result = fuse(DetectorSignals(), bundle)
         self.assertEqual(result.fused_risk, 0.0)
         self.assertEqual(result.action, "ALLOW")
+
+    def test_detector_weights_no_longer_exists(self):
+        from control_plane.models import BundleConfig, PolicyConfig
+        self.assertNotIn("detector_weights", PolicyConfig.model_fields)
+        self.assertNotIn("detector_weights", BundleConfig.model_fields)
+        self.assertNotIn("detector_weights", get_bundle(BUNDLES["customer_support"]))
 
 
 class TestInputRiskTightening(unittest.TestCase):
@@ -284,6 +315,7 @@ class TestLedgerProjection(unittest.TestCase):
         self.assertAlmostEqual(row["raw_scores"]["toxicity"], 0.44, places=9)
         self.assertIn("normalized_scores", row)
         self.assertIn("effective_bands", row)
+        self.assertNotIn("weights_applied", row)
 
 
 if __name__ == "__main__":

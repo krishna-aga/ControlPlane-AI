@@ -23,12 +23,11 @@ high_band: 0.7
 # Semantic cache default
 cache_threshold: 0.90
 
-# Default detector weights for risk fusion
-detector_weights:
-  t0: 0.4
-  pii: 0.2
-  grounding: 0.2
-  toxicity: 0.2
+# There are deliberately no detector weights. Fused risk is the MAXIMUM normalized
+# detector score - the worst axis is the risk. Averaging let a clean check on one axis
+# dilute a real finding on another, and made the answer depend on how many detectors
+# happened to run. Sensitivity per axis is expressed by the thresholds below, and
+# "severe enough to block alone" by detector_critical_thresholds.
 
 # Per-detector critical floors, on the NORMALIZED S scale (0.5 == detection threshold).
 # A detector reaching its critical value floors fused risk at high_band regardless of

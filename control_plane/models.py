@@ -43,9 +43,12 @@ class PolicyConfig(BaseModel):
     high_band: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     cache_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
-    # Detector Weights for fusion engine
-    detector_weights: Optional[Dict[str, float]] = None
-
+    # There is deliberately no `detector_weights`. Fused risk is the MAXIMUM normalized
+    # detector score, not a weighted average: averaging orthogonal risks is a category
+    # error, and it made the result depend on how many detectors happened to run. An org
+    # that cares more about one axis says so through that detector's threshold and its
+    # entry in detector_critical_thresholds - both locked, both more direct than a
+    # weight. See docs/RISK_FUSION.md
     # Per-detector critical floors, on the NORMALIZED S scale where 0.5 == the
     # detection threshold. A detector at/above its critical value floors the fused
     # risk at high_band regardless of weights. Without this, no single T1 detector
@@ -123,9 +126,6 @@ class BundleConfig(BaseModel):
     low_band: float = 0.3
     high_band: float = 0.7
     cache_threshold: float = 0.90
-
-    # Fusion weights & locked fields record
-    detector_weights: Dict[str, float] = Field(default_factory=lambda: {"t0": 0.4, "pii": 0.2, "grounding": 0.2, "toxicity": 0.2})
 
     # Per-detector critical floors (normalized S scale; 0.5 == detection threshold)
     detector_critical_thresholds: Dict[str, float] = Field(

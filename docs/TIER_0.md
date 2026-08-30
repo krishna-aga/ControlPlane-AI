@@ -123,7 +123,7 @@ Track 2 now emits `high` and reaches BLOCK through a **categorical floor** inste
 
 ### The floor, and why a plain downgrade was not enough
 
-Measured before adding it — Track 2 at `high`, with T1 also running:
+Measured at the time — Track 2 at `high`, under the then-current weighted average:
 
 ```
 T0 alone (nothing else ran)   S_t0=0.75  w=1.00  fused=0.750  → BLOCK
@@ -131,9 +131,16 @@ T0 + quiet T1 detectors       S_t0=0.75  w=0.40  fused=0.332  → REDACT   ← d
 ```
 
 A leaked credential degraded to REDACT the moment any T1 detector ran, because the `t0`
-weight is 0.4. That is the **P4 defect reappearing on Tier 0** — and note that
+weight was 0.4. That was the **P4 defect reappearing on Tier 0** — and
 `detector_critical_thresholds` contains only `{pii, grounding, toxicity}`, so T0 had no
 floor to rescue it.
+
+> **Superseded in part.** Fusion has since moved to **max aggregation** and
+> `detector_weights` is gone, so weight dilution can no longer occur (see
+> [`RISK_FUSION.md`](RISK_FUSION.md) §5). The floor is still required: `high` scores
+> 0.75, which is below `high_band` of 0.70… in fact above it — but `medium` at 0.40 is
+> not, and the floor is what lets an org tighten `t0_floor_severity` to escalate weaker
+> findings. It is now a policy lever rather than a defence against arithmetic.
 
 The new `t0_floor_severity` (locked, default `high`) floors fused risk at `high_band`
 when any finding reaches that severity. Compared by **severity rank, never against the
@@ -141,11 +148,12 @@ normalized S scale** — T0 has no threshold and so carries none of T1's 0.5-mid
 semantics (T0-2). Measured after:
 
 ```
-T0 + quiet T1 detectors       fused=0.700  fired=['t0']  → BLOCK
-blocklist only (medium)       fused=0.192  fired=[]      → ALLOW
+Track 2 secret (high)         fused=0.750  fired=['t0']  → BLOCK
+blocklist only (medium)       fused=0.400  fired=[]      → REDACT
 ```
 
 Track 2 loses the unconditional veto it had not earned, and keeps the ability to act.
+Under max aggregation both figures are now the same whatever else ran.
 
 ### T0-2 — T0 is categorical
 
@@ -351,8 +359,12 @@ warned. Now closed.
 
 ## 8. Open question for fusion
 
-A blocklist-only hit scores `medium` → `0.40 × w_t0 0.4 = 0.16`, below `low_band`, so it
-resolves to **ALLOW**. This is the register's open item #7 and it is still unconfirmed:
-an org term appearing in output produces a ledger row and no action. Either that is
-intended (blocklist is telemetry, not enforcement), or `medium` should sit above
-`low_band`, or blocklist should carry its own floor.
+**Resolved by max aggregation.** A blocklist-only hit used to score
+`0.40 × w_t0 0.4 = 0.16` — below `low_band`, so it resolved to ALLOW, and inconsistently
+so. Fused risk is now the maximum normalized score, so `medium` stands at its table
+value of **0.40**, above `low_band`, and a blocklist hit consistently reaches `REDACT`.
+
+The follow-on: `t0_severity_scores` is now read **directly** rather than diluted, so
+those four numbers govern behaviour far more than they did. They remain the spec's
+estimate and deserve a deliberate review — and the map is still unlocked, so a tenant can
+set every severity to 0.0 and silence Tier 0's contribution to fusion.

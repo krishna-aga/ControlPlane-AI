@@ -215,12 +215,14 @@ class TestStructuralValidators(unittest.TestCase):
             resolve_policy(base, PolicyConfig(low_band=0.8, high_band=0.3))
         self.assertIn("exceeds high_band", str(ctx.exception))
 
-    def test_weights_must_sum_to_one(self):
-        base = PolicyConfig()
-        child = PolicyConfig(detector_weights={"t0": 5.0, "pii": 5.0})
-        with self.assertRaises(ValueError) as ctx:
-            resolve_policy(base, child)
-        self.assertIn("must sum to 1.0", str(ctx.exception))
+    def test_detector_weights_is_gone(self):
+        """
+        Removed with the move to max-aggregation. It also closed a hole: the sum-to-1.0
+        validator accepted {t0: 2.0, pii: -1.0} and {nonsense: 1.0}, since it checked
+        only the total and never the signs or the key set.
+        """
+        self.assertNotIn("detector_weights", PolicyConfig.model_fields)
+        self.assertNotIn("detector_weights", BundleConfig.model_fields)
 
     def test_critical_threshold_below_detection_rejected(self):
         """
@@ -238,7 +240,6 @@ class TestStructuralValidators(unittest.TestCase):
         base = load_yaml_policy("policies/org_baseline.yaml")
         for persona in ["customer_support", "decision_support", "internal_copilot"]:
             resolved = resolve_policy(base, load_yaml_policy(f"policies/{persona}.yaml"))
-            self.assertAlmostEqual(sum(resolved["detector_weights"].values()), 1.0)
             self.assertLessEqual(resolved["low_band"], resolved["high_band"])
 
 

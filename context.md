@@ -59,6 +59,7 @@ The system enforces different risk postures using identical gateway code driven 
 
 ## 5. Key Implementation Rules
 * **No Hardcoded Constants:** All thresholds (`pii_threshold`, `grounding_threshold`, `low_band`, `high_band`) must be loaded dynamically from `bundle.json`.
+* **Fused Risk Is the Worst Axis:** Fusion takes the MAXIMUM normalized detector score, not a weighted average. There is no `detector_weights`. Averaging orthogonal risks let a clean check on one axis dilute a real finding on another, and made the answer depend on how many detectors happened to run. See `docs/RISK_FUSION.md` §5.
 * **Strict Privacy in Storage:** Never store raw sensitive PII or unredaction maps in the audit ledger—log entity types, character spans, and confidence scores only.
 * **Locking Enforcement:** Downstream policy layers can make locked fields stricter, never looser.
 * **No Latency Negotiation:** There is no `latency_budget_ms`. Latency is measured and reported per stage, never traded against safety; `t2_enabled` is the only depth knob. See `docs/NO_LATENCY_BUDGET.md`.

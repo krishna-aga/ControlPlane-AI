@@ -148,8 +148,6 @@ class FusionResult(BaseModel):
 
     normalized: Dict[str, float] = Field(default_factory=dict)   # S per detector
     raw: Dict[str, Optional[float]] = Field(default_factory=dict)
-    weights_applied: Dict[str, float] = Field(default_factory=dict)
-    contributions: Dict[str, float] = Field(default_factory=dict)
 
     critical_fired: List[str] = Field(default_factory=list)
     dominant_detector: Optional[str] = None
@@ -166,7 +164,6 @@ class FusionResult(BaseModel):
             "fused_risk": round(self.fused_risk, 4),
             "raw_scores": {k: v for k, v in self.raw.items() if v is not None},
             "normalized_scores": {k: round(v, 4) for k, v in self.normalized.items()},
-            "weights_applied": {k: round(v, 4) for k, v in self.weights_applied.items()},
             "critical_fired": self.critical_fired,
             "dominant_detector": self.dominant_detector,
             "effective_bands": [
