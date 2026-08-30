@@ -11,3 +11,10 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# Secrets - BYOK provider credentials, never committed
+.env
+.env.*
+!.env.example
+*.key
+*.pem
