@@ -1,8 +1,8 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a",
-  "compiled_at": "2026-08-30T12:59:10.879770+00:00",
+  "policy_hash": "80ee604872031d38d906ecc9e7a212836ec4ac4f0e977034192c3024f85dbade",
+  "compiled_at": "2026-08-30T16:15:54.677262+00:00",
   "description": "Optimized for fast response times and customer interaction.",
   "t2_enabled": false,
   "pii_mode": "redact-and-proceed",
@@ -37,6 +37,17 @@
     "ORG": 0.7
   },
   "pii_aggregation": "max",
+  "grounding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "toxicity_model": "unitary/toxic-bert",
+  "grounding_min_claim_tokens": 6,
+  "toxicity_label_weights": {
+    "identity_attack": 1.0,
+    "threat": 1.0,
+    "severe_toxicity": 1.0,
+    "insult": 0.7,
+    "obscene": 0.5,
+    "toxicity": 0.6
+  },
   "injection_threshold": 0.7,
   "injection_action": "flag",
   "injection_evasion_penalty": 0.15,
@@ -46,6 +57,7 @@
     "caching_enabled",
     "detector_critical_thresholds",
     "fail_mode",
+    "grounding_model",
     "grounding_threshold",
     "high_band",
     "injection_action",
@@ -58,6 +70,8 @@
     "secret_min_length",
     "t0_floor_severity",
     "t0_severity_scores",
+    "toxicity_label_weights",
+    "toxicity_model",
     "toxicity_threshold"
   ]
 }

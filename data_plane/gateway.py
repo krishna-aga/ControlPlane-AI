@@ -11,7 +11,7 @@ ControlPlane.ai Data Plane gateway.
         │
     T0 ──── hard_override ───► skip T1/T2
         │
-    T1 / T2  (not built - see docs/GATEWAY.md)
+    T1: grounding (if context_docs), toxicity   ◄── T2 not built - see docs/GATEWAY.md
         │
     fusion (input risk tightens the bands)
         │
@@ -34,8 +34,10 @@ from pydantic import BaseModel, Field
 from data_plane import canary
 from data_plane.adapters import Credentials, ModelAdapter, ModelCallError, ModelResponse, get_adapter
 from data_plane.cache import SemanticCache, namespace_key, servable, storable
+from data_plane.detectors.grounding import score_grounding
 from data_plane.detectors.pii import deanonymize
 from data_plane.detectors.t0 import run_t0
+from data_plane.detectors.toxicity import score_toxicity
 from data_plane.fusion import fuse
 from data_plane.input_gate import get_bundle, process_input
 from data_plane.ledger import Ledger
@@ -127,6 +129,21 @@ class Gateway:
         """
         try:
             return run_t0(text, scope, restore_map, bundle, forward_prompt), False
+        except Exception:
+            return None, True
+
+    @staticmethod
+    def _run_grounding(text: str, context_docs: List[str], bundle: Dict) -> tuple[Optional[float], bool]:
+        """Same T1-7 treatment as _run_t0: a thrown detector is 'failed', not 'None'."""
+        try:
+            return score_grounding(text, context_docs, bundle), False
+        except Exception:
+            return None, True
+
+    @staticmethod
+    def _run_toxicity(text: str, bundle: Dict) -> tuple[Optional[float], bool]:
+        try:
+            return score_toxicity(text, bundle), False
         except Exception:
             return None, True
 
@@ -287,24 +304,40 @@ class Gateway:
 
         # --- T0, then fusion -----------------------------------------------------------
         t0, t0_failed = self._run_t0(model.text, scope, restore_map, bundle, gate.forward_prompt)
-
-        signals = DetectorSignals(
-            t0_severities=t0.severities if t0 else [],
-            # T1 is not built. Its fields stay None, which marks them INAPPLICABLE so
-            # fusion renormalizes rather than scoring an absent detector as zero.
-            injection_risk=live_injection_risk,
-            input_flagged=(gate.action == "FLAG"),
-            # T1-7: a thrown T0 is not "no findings" - fuse() routes this through
-            # fail_mode rather than letting it pass as silently clean.
-            detector_status={"t0": "failed"} if t0_failed else {},
-        )
+        detector_status = {"t0": "failed"} if t0_failed else {}
 
         if t0 is not None and t0.hard_override:
             # Skipping T1/T2 is correct for cost - the decision is already final. Fusion
             # still runs so the ledger row carries the same shape as every other row.
+            signals = DetectorSignals(
+                t0_severities=t0.severities,
+                injection_risk=live_injection_risk,
+                input_flagged=(gate.action == "FLAG"),
+                detector_status=detector_status,
+            )
             fusion = fuse(signals, bundle)
             return finish("BLOCK", "This response was blocked before delivery.",
                           "Tier 0 hard override", t0=t0, fusion=fusion, model=model)
+
+        # --- T1: grounding (only when there is context to check against) + toxicity ----
+        grounding_similarity, grounding_failed = (
+            self._run_grounding(model.text, context_docs, bundle) if context_docs
+            else (None, False)
+        )
+        toxicity_probability, toxicity_failed = self._run_toxicity(model.text, bundle)
+        if grounding_failed:
+            detector_status["grounding"] = "failed"
+        if toxicity_failed:
+            detector_status["toxicity"] = "failed"
+
+        signals = DetectorSignals(
+            t0_severities=t0.severities if t0 else [],
+            grounding_similarity=grounding_similarity,
+            toxicity_probability=toxicity_probability,
+            injection_risk=live_injection_risk,
+            input_flagged=(gate.action == "FLAG"),
+            detector_status=detector_status,
+        )
 
         fusion = fuse(signals, bundle)
         action = fusion.action
@@ -324,11 +357,21 @@ class Gateway:
             action, bundle, tenant_id, restore_map, len(t0.findings) if t0 else 0,
             gate.action == "FLAG", len(messages), bool(model.provider_refused),
         )
-        # A response T0 could not verify must never seed the cache - a future lookup
-        # would revalidate it, but the point of caching is to skip that work, and
-        # skipping it for an unverified response is exactly the hole T1-7 closes.
-        if t0_failed:
-            write_ok, write_skip = False, "Tier 0 could not verify this response (T1-7); not cached"
+        # A response NO detector could verify must never seed the cache, and this covers
+        # T1 as well as T0. The distinction matters: the hit path re-runs T0 but never
+        # re-runs T1, so a transient grounding or toxicity failure written into an entry
+        # is never checked again - one flaky detector call becomes a permanently
+        # unverified answer served to every subsequent match. That is strictly worse than
+        # the T0 case, which at least gets revalidated on serve. This is the cache half
+        # of T1-7: `fail_mode` decides what to DELIVER when verification failed; the
+        # cache decides what to REMEMBER, and remembering an unverified answer outlives
+        # the request that produced it.
+        _DETECTOR_NAMES = {"t0": "Tier 0", "grounding": "grounding", "toxicity": "toxicity"}
+        unverified = sorted(_DETECTOR_NAMES.get(d, d)
+                            for d, s in detector_status.items() if s == "failed")
+        if unverified:
+            write_ok, write_skip = False, (
+                f"{', '.join(unverified)} could not verify this response (T1-7); not cached")
         if write_ok and namespace:
             self.cache.store(namespace, gate.forward_prompt, text, request_id,
                              bundle.get("policy_hash", ""))

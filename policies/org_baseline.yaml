@@ -72,6 +72,27 @@ ner_label_confidence:
   ORG: 0.70
 pii_aggregation: max
 
+# Grounding and toxicity model identity. A threshold means nothing without pinning the
+# scale it was measured on - swap the model and 0.6 silently enforces something else
+# while policy_hash stays identical. Immutable: no ordering on model identity, so no
+# "stricter" direction exists to enforce. See docs/TIER_1.md (T1-1).
+grounding_model: sentence-transformers/all-MiniLM-L6-v2
+toxicity_model: unitary/toxic-bert
+# Non-claim sentences ("Happy to help.") have no ground truth and would fire on almost
+# every response under worst-sentence scoring; this is the claim filter. NOT locked -
+# see docs/TIER_1.md §2A: it's a sensitivity knob, not a safety-critical one.
+grounding_min_claim_tokens: 6
+# Detoxify/toxic-bert emits six unequal labels. Raw = max(P_label * weight_label),
+# read directly by max-aggregation fusion - zeroing an entry silences that label
+# outright rather than diluting it (docs/TIER_1.md T1-6).
+toxicity_label_weights:
+  identity_attack: 1.0
+  threat: 1.0
+  severe_toxicity: 1.0
+  insult: 0.7
+  obscene: 0.5
+  toxicity: 0.6
+
 # Input Gate: prompt injection.
 # There is no 'sanitize' action. Lexical removal of a matched injection span forwards
 # the remainder of the attack, so the ladder is allow | flag | block. 'flag' proceeds
@@ -111,6 +132,11 @@ locked_fields:
   # is read directly by max-aggregation fusion rather than diluted by a weight.
   - detector_critical_thresholds
   - t0_severity_scores
+  - toxicity_label_weights
+  # Immutable: swapping the model isn't stricter or looser, it's a different scale
+  # entirely. See docs/TIER_1.md (T1-1).
+  - grounding_model
+  - toxicity_model
   # A cache hit is a decision to skip the checks. Both halves of that decision are the
   # org's to make: tenants may disable caching or demand a closer match, never the
   # reverse. internal_copilot shipped cache_threshold 0.85 against this 0.90 baseline

@@ -33,7 +33,7 @@ INJECTION_PATTERNS = [
     "delimiter_escape",
     "encoded_payload_smuggling",
 ]
-PROVIDERS = [("gemini", "gemini-3.5-flash"), ("mock", "mock-model")]
+PROVIDERS = [("gemini", "gemini-3.5-flash-lite"), ("mock", "mock-model")]
 
 # Action weights per persona, tuned to match each bundle's posture (see context.md
 # §3): decision_support is fail_closed with t2 on, so it blocks/flags far more.

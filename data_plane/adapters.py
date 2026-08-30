@@ -46,7 +46,7 @@ class Credentials(BaseModel):
         return {"provider": self.provider, "model": self.model, "api_key": "<redacted>"}
 
     @classmethod
-    def from_env(cls, provider: str = "gemini", model: str = "gemini-3.5-flash") -> "Credentials":
+    def from_env(cls, provider: str = "gemini", model: str = "gemini-3.5-flash-lite") -> "Credentials":
         """
         DEVELOPMENT ONLY. Real tenants supply credentials with the request; resolving
         from process environment is what makes a gateway single-tenant.

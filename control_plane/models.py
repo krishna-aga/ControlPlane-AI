@@ -81,6 +81,20 @@ class PolicyConfig(BaseModel):
     ner_label_confidence: Optional[Dict[str, float]] = None
     pii_aggregation: Optional[Literal["max", "noisy_or", "density"]] = None
 
+    # Grounding and toxicity model identity. A cosine similarity or a toxicity
+    # probability is meaningless without pinning WHICH model produced it - swap the
+    # model and the same threshold silently enforces something else while policy_hash
+    # stays identical (see docs/TIER_1.md T1-1). Immutable: there is no ordering on
+    # model identity, so no "stricter" direction to define.
+    grounding_model: Optional[str] = None
+    toxicity_model: Optional[str] = None
+    # Higher = fewer sentences pass the claim filter = looser (non-claim sentences have
+    # no ground truth and would otherwise fire on almost every response).
+    grounding_min_claim_tokens: Optional[int] = Field(default=None, ge=1)
+    # Detoxify/toxic-bert emits six unequal labels; collapsing them into one score
+    # discards which one fired. Raw = max(P_label * weight_label). Higher = stricter.
+    toxicity_label_weights: Optional[Dict[str, float]] = None
+
     # Input Gate: prompt injection.
     # injection_threshold is a RISK CEILING -> lower is stricter.
     # injection_action is deliberately NOT modelled on pii_mode. There is no safe
@@ -159,6 +173,16 @@ class BundleConfig(BaseModel):
         default_factory=lambda: {"PERSON": 0.85, "GPE": 0.75, "ORG": 0.70}
     )
     pii_aggregation: Literal["max", "noisy_or", "density"] = "max"
+
+    grounding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    toxicity_model: str = "unitary/toxic-bert"
+    grounding_min_claim_tokens: int = 6
+    toxicity_label_weights: Dict[str, float] = Field(
+        default_factory=lambda: {
+            "identity_attack": 1.0, "threat": 1.0, "severe_toxicity": 1.0,
+            "insult": 0.7, "obscene": 0.5, "toxicity": 0.6,
+        }
+    )
 
     # Input Gate: prompt injection (see PolicyConfig for why there is no 'sanitize')
     injection_threshold: float = 0.7

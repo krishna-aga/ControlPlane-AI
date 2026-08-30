@@ -4,8 +4,9 @@ Live Gateway Demo (Streamlit demo UI).
 Every other page in this app is the LEARNING plane - it looks backward at decisions
 already made. This page drives the DATA plane live: type a prompt, and it calls the
 real `Gateway.process_request()` against the real Gemini API (BYOK, key read from
-.env) - no mocked model, no scripted response. Input Gate, Tier 0, and fusion are the
-actual production code path; only the model call is external.
+.env) - no mocked model, no scripted response. Input Gate, Tier 0, Tier 1 (grounding +
+toxicity, real MiniLM/toxic-bert models - see docs/TIER_1.md), and fusion are the
+actual production code path; only the model call itself is external.
 
 Run:
     streamlit run learning_plane/app.py
@@ -27,10 +28,13 @@ if str(REPO_ROOT) not in sys.path:
 from data_plane.adapters import Credentials, GeminiAdapter  # noqa: E402
 from data_plane.gateway import Gateway  # noqa: E402
 
-MODEL = "gemini-3.5-flash"   # gemini-2.0-flash and gemini-2.5-flash were both retired for
-                              # new users (404); gemini-3.6-flash hit its daily quota mid-
-                              # session - Gemini quotas are tracked PER MODEL on one key,
-                              # so this one has a separate, unused quota. Verified live.
+MODEL = "gemini-3.5-flash-lite"   # gemini-2.0-flash / gemini-2.5-flash: retired for new
+                                   # users (404). gemini-3.6-flash AND gemini-3.5-flash:
+                                   # both hit their daily quota from testing. Gemini quotas
+                                   # are tracked PER MODEL on one key, and the "flash-lite"
+                                   # tier gets a separately-tracked, much higher daily quota
+                                   # than full "flash" - safer for a recording session.
+                                   # Verified live (quality + full Gateway path).
 
 
 def _load_dotenv(path: Path) -> None:
@@ -103,17 +107,28 @@ with st.form("run_form"):
              "canary into this text on every request and Tier 0 checks the answer for a leak.",
     )
     prompt = st.text_area("Prompt", height=120, placeholder="Type a prompt to send through the gateway...")
+    context_text = st.text_area(
+        "Context documents (optional, one per line)", height=80,
+        placeholder="Paste the source document here to test grounding — e.g. your real refund policy text.",
+        help="Grounding only runs when there's something to check the answer against. "
+             "Leave empty to skip it (toxicity always runs regardless).",
+    )
     submitted = st.form_submit_button("Run", type="primary")
 
 if submitted:
     if not prompt.strip():
         st.warning("Type a prompt first.")
     else:
+        context_docs = [line.strip() for line in context_text.splitlines() if line.strip()]
         creds = Credentials(provider="gemini", model=MODEL, api_key=os.environ.get("GEMINI_API_KEY", ""))
         with st.spinner("Calling Gemini and running the checks..."):
             result = gateway.process_request(
                 [{"role": "user", "content": prompt}], str(BUNDLES[persona]), uuid.uuid4().hex,
-                credentials=creds, system_prompt=system_prompt,
+                credentials=creds, system_prompt=system_prompt, context_docs=context_docs,
+                # The cache refuses to engage at all without a tenant_id (a cache entry
+                # is scoped per-tenant, never shared) - fixed here since this is a
+                # single-user local demo, not a multi-tenant deployment.
+                tenant_id="demo-tenant", entitlement_scope="demo",
             )
         st.session_state.last_result = result
         st.rerun()
@@ -126,6 +141,66 @@ if result:
         st.error(result.response)
     else:
         st.write(result.response)
+
+    if result.served_from == "cache":
+        st.info(
+            f"🔵 Served from **cache** in {result.latency_ms:.0f} ms — the model was "
+            f"never called. Similarity to the stored prompt: **{result.cache_similarity:.3f}** "
+            f"(source request `{result.cache_source_request_id[:12]}…`)."
+        )
+    else:
+        st.caption(
+            f"🌐 Served from **upstream** in {result.latency_ms:.0f} ms — a real model call."
+            + (f" (cache skipped: {result.cache_skip_reason})" if result.cache_skip_reason else "")
+        )
+
+    if result.fusion:
+        raw = result.fusion.raw
+        bits = []
+        if "grounding" in raw:
+            bits.append(f"grounding similarity: **{raw['grounding']:.3f}** "
+                       f"({'grounded' if raw['grounding'] >= 0.6 else 'NOT grounded'})")
+        if "toxicity" in raw:
+            bits.append(f"toxicity: **{raw['toxicity']:.3f}**")
+        if bits:
+            st.caption(" · ".join(bits))
+        if result.fusion.detector_status:
+            st.warning(f"Detector failure recorded (T1-7): {result.fusion.detector_status}")
+
+st.divider()
+
+# -- persona comparison -------------------------------------------------------------------
+
+st.subheader("Compare across personas")
+st.caption(
+    "The same prompt, sent to all three personas back-to-back — same detectors, same "
+    "model, three different policies. `pii_mode` alone changes what leaves the gateway."
+)
+with st.form("compare_form"):
+    compare_prompt = st.text_area(
+        "Prompt", "My card number is 4111111111111111, can you tell me what type of card that is?",
+        height=80,
+    )
+    compare_submitted = st.form_submit_button("Compare across personas", type="primary")
+
+if compare_submitted and compare_prompt.strip():
+    creds = Credentials(provider="gemini", model=MODEL, api_key=os.environ.get("GEMINI_API_KEY", ""))
+    cols = st.columns(3)
+    for col, p in zip(cols, BUNDLES):
+        with col:
+            st.markdown(f"**{PERSONA_LABELS[p]}**")
+            with st.spinner(f"Running against {p}..."):
+                r = gateway.process_request(
+                    [{"role": "user", "content": compare_prompt}], str(BUNDLES[p]), uuid.uuid4().hex,
+                    credentials=creds, system_prompt="You are a helpful assistant.",
+                    tenant_id="demo-tenant", entitlement_scope="demo",
+                )
+            st.markdown(f"{ACTION_COLOR.get(r.action, '⚪')} **{r.action}**")
+            st.caption(r.reason)
+            if r.action == "BLOCK":
+                st.error(r.response)
+            else:
+                st.write(r.response)
 
 st.divider()
 

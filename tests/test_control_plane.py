@@ -242,6 +242,13 @@ class TestStructuralValidators(unittest.TestCase):
         T1-8: a critical value >= high_band can never fire before the band arithmetic
         already blocks - legal (a tenant may tighten high_band later), so it warns
         rather than raises. The shipped baseline ships exactly this shape.
+
+        Requires torchvision installed (see requirements.txt), even though nothing here
+        touches it: assertWarns walks every module in sys.modules checking for
+        __warningregistry__, which trips transformers' lazy-module __getattr__ once
+        Tier 1's detectors have imported it elsewhere in the suite, cascading into an
+        unrelated optional (vision) import path. Not our bug - just the price of that
+        interaction existing at all in this process.
         """
         from control_plane.resolver import InertCriticalThresholdWarning
         base = load_yaml_policy("policies/org_baseline.yaml")

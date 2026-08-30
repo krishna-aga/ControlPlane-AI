@@ -1,11 +1,16 @@
 # Tier 1 — Grounding, Toxicity, and the Bias Gap
 
-**Status:** The two detectors themselves remain specified, **not implemented** — no
-model weights are vendored (§7 still holds). **T1-7 and T1-8 (§5) are fixed**: they
-were live defects in code that already shipped, not part of the deferred detector
-build, and required no model dependency.
-**Scope:** future `data_plane/detectors/grounding.py` and `toxicity.py`,
-`data_plane/models.py`, `control_plane/{models,resolver}.py`,
+**Status:** Grounding and toxicity are **implemented** —
+`data_plane/detectors/grounding.py` (sentence-transformers/all-MiniLM-L6-v2) and
+`toxicity.py` (unitary/toxic-bert), real model weights, wired into
+`data_plane/gateway.py` and covered by `tests/test_tier1_detectors.py` and
+`tests/test_gateway.py::TestTier1Wiring`. The decision to vendor weights (§7) was
+reversed; everything else decided in this document — bias declared not built,
+`grounding_threshold` left uncalibrated, NLI not built — still holds exactly as
+written. **T1-7 and T1-8 (§5) were fixed separately**, before the detectors existed:
+they were live defects in code that already shipped, not part of the detector build.
+**Scope:** `data_plane/detectors/grounding.py` and `toxicity.py`, `data_plane/models.py`,
+`data_plane/gateway.py`, `control_plane/{models,resolver}.py`,
 `policies/org_baseline.yaml`.
 
 Two decisions were taken when this document was written, and they shape everything
@@ -28,17 +33,18 @@ already exists.
 
 | # | Item | Kind | Disposition |
 | :--- | :--- | :--- | :--- |
-| **T1-1** | The bundle pins thresholds but not the **scale** they are measured on | Audit hole | Fix when building: `grounding_model` / `toxicity_model`, locked |
-| **T1-2** | Whole-response scoring dilutes a single bad sentence | Design defect | Worst-unit, not a knob |
-| **T1-3** | The grounding band geometry is probably miscalibrated | Calibration risk | **Accepted, unmeasured** — §2B |
-| **T1-4** | Cosine measures topic, not truth | Accepted limitation | Document, as T0-8 does |
-| **T1-5** | NLI cannot reuse `grounding_threshold` — direction flips | Latent P1 | Separate detector key, if ever built |
-| **T1-6** | One `toxicity_probability` collapses six unequal labels | Design defect | `toxicity_label_weights`, locked |
+| **T1-1** | The bundle pins thresholds but not the **scale** they are measured on | Audit hole | **Fixed** — `grounding_model` / `toxicity_model`, locked immutable |
+| **T1-2** | Whole-response scoring dilutes a single bad sentence | Design defect | **Fixed** — worst-sentence scoring, both detectors |
+| **T1-3** | The grounding band geometry is probably miscalibrated | Calibration risk | **Still accepted, unmeasured** — §2B. Confirmed live: a genuinely correct answer scored 0.75 similarity and landed in REGENERATE, exactly the risk this row predicted |
+| **T1-4** | Cosine measures topic, not truth | Accepted limitation | Still true of the real detector — document, as T0-8 does |
+| **T1-5** | NLI cannot reuse `grounding_threshold` — direction flips | Latent P1 | Still not built — separate detector key, if ever built |
+| **T1-6** | One `toxicity_probability` collapses six unequal labels | Design defect | **Fixed** — `toxicity_label_weights`, locked. Exposed a second live bug in the process: see T1-9 |
 | **T1-7** | `DetectorSignals` cannot express *"the detector failed"* | **Fixed** | `detector_status`, routed through `fail_mode` (§5) |
 | **T1-8** | Every critical floor is **inert** at the shipped bands | **Fixed (warns)** | `_validate_critical_coherence` now warns when a critical value is inert (§5) |
+| **T1-9** | `unitary/toxic-bert` emits Kaggle label names, not Detoxify's | **Live bug, fixed** | `_LABEL_ALIASES` in `toxicity.py` — see §3E |
 
-T1-7 and T1-8 were defects in code that already shipped, and are now fixed. Everything
-else is contract for code that does not exist yet.
+T1-7, T1-8 and T1-9 are defects found in code; T1-1, T1-2 and T1-6 are now implemented
+per their original disposition. T1-3, T1-4 and T1-5 remain open exactly as designed.
 
 ---
 
@@ -304,6 +310,30 @@ Only fabrication risk is origin-sensitive. The other two are not, for different 
 One toxic sentence inside a long polite answer must not average away. Same argument as
 §2A; not a knob, for the same reason.
 
+### E. The live model doesn't speak the spec's label names (T1-9)
+
+`unitary/toxic-bert` was pinned by name in §3A's example config before it was ever
+loaded. Loading it and calling `pipeline("text-classification", model=..., top_k=None)`
+returns:
+
+```
+toxic, severe_toxic, obscene, threat, insult, identity_hate
+```
+
+not the Detoxify-convention names this document (and `toxicity_label_weights`) used:
+`toxicity`, `severe_toxicity`, `identity_attack`. Three of six disagree. Matched blind
+- `weights.get(entry["label"], 0.0)` against the raw label - every lookup on those three
+misses, and the detector silently returns `0.0` forever: not an error, not a crash, a
+clean-looking zero that means "unchecked," indistinguishable in the ledger from
+"checked and found nothing." This is the T0-10 failure shape again - a value computed
+against the wrong alphabet - one detector class over.
+
+Fixed with an explicit alias table (`_LABEL_ALIASES` in `data_plane/detectors/toxicity.py`)
+mapping the model's raw label to the canonical name before the weight lookup, verified
+by `tests/test_tier1_detectors.py::test_label_names_are_correctly_aliased` against the
+real model (a mocked model would have passed with the bug still present, since the mock
+would never emit the wrong names to begin with).
+
 ---
 
 ## 4. Bias — declared, not built
@@ -438,19 +468,20 @@ tenant-lever mechanism changed, only its visibility. Covered by
 
 ---
 
-## 6. Bundle fields, if and when T1 is built
+## 6. Bundle fields — implemented
 
 | field | default | direction | locked |
 | :--- | :--- | :--- | :--- |
-| `grounding_model` | `all-MiniLM-L6-v2` | immutable | yes |
+| `grounding_model` | `sentence-transformers/all-MiniLM-L6-v2` | immutable | yes |
 | `toxicity_model` | `unitary/toxic-bert` | immutable | yes |
 | `grounding_min_claim_tokens` | `6` | higher = fewer sentences scored = looser | no |
 | `toxicity_label_weights` | §3A table | map, higher stricter | yes |
 | `entailment_threshold` | — | lower stricter | only if NLI ships |
 
-`grounding_threshold`, `toxicity_threshold` and `detector_critical_thresholds` already
-exist and are already locked. **None of the above is added now**, for the reason in §1:
-nothing consumes them, and the hash churn buys nothing.
+The first four are in `policies/org_baseline.yaml` and every compiled bundle now.
+`entailment_threshold` stays undefined - NLI is still not built (§2D). `grounding_threshold`,
+`toxicity_threshold` and `detector_critical_thresholds` predate this change and were
+already locked.
 
 There are deliberately **no** `grounding_aggregation` or `toxicity_aggregation` knobs
 (§2A), and **no** `bias_*` fields (§4).
@@ -459,12 +490,14 @@ There are deliberately **no** `grounding_aggregation` or `toxicity_aggregation` 
 
 ## 7. Deliberately not built
 
-* **Both detectors.** Building them requires vendoring model weights — roughly 90 MB for
-  MiniLM, ~420 MB for toxic-bert, ~50 MB for spaCy's NER. The decision was taken not to.
-  `DetectorSignals.grounding_similarity` and `.toxicity_probability` stay `None`, which
-  fusion already treats as inapplicable.
-* **Calibrating `grounding_threshold`** (§2B) — requires the model, deliberately
-  deferred, recorded as an accepted risk rather than a settled number.
+* **Both detectors are now built** (`data_plane/detectors/grounding.py`, `toxicity.py`),
+  reversing the earlier decision not to vendor weights. `spaCy`'s NER remains out of
+  scope here - NER is already specified separately (see the intro).
+* **Calibrating `grounding_threshold`** (§2B) — still deliberately deferred. Having the
+  model now doesn't retroactively calibrate the threshold; that requires deliberately
+  sampling a real cosine distribution on grounded vs. fabricated pairs, which nothing in
+  this change did. Recorded as an accepted risk rather than a settled number, and now
+  confirmed live (§2B, T1-3 row).
 * **Bias** (§4) — declared, delegated to T2.
 * **NLI entailment** (§2D) — designed as a separate detector key, not built.
 * **Parallelism.** The docs describe T1 as *"parallel heuristics, ~40 ms."* Both figures
@@ -476,7 +509,15 @@ There are deliberately **no** `grounding_aggregation` or `toxicity_aggregation` 
 
 ## 8. Open
 
-* **T1-7 and T1-8 are fixed** (§5) — no longer open.
+* **T1-7, T1-8 and T1-9 are fixed** (§5, §3E) — no longer open.
+* **`grounding_threshold` calibration** (§2B, T1-3) — still genuinely open. Now
+  confirmed live rather than merely predicted: sample the real cosine distribution on
+  grounded vs. fabricated pairs for `all-MiniLM-L6-v2` before trusting this in
+  production, exactly as originally scoped.
+* **T1 detectors run sequentially, not in parallel**, in `Gateway.process_request()`.
+  The "~40 ms parallel" figure in §7's parallelism note was never validated and this
+  change didn't validate it either - grounding and toxicity are two more sequential
+  calls today, not a measured concurrent budget.
 * **`pii_aggregation` and `t0_aggregation` remain knobs** while grounding and toxicity
   are specified without one (§2A). That inconsistency is defensible — those two predate
   the max-aggregation argument — but it should be resolved in one direction eventually.

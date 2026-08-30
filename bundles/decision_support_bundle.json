@@ -1,8 +1,8 @@
 {
   "policy_name": "decision-support-tool",
   "policy_version": "v1.0.0",
-  "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
-  "compiled_at": "2026-08-30T12:59:11.091055+00:00",
+  "policy_hash": "93a1bba4f4cf4eb6186d7313da996c02dac17d117827a1e6c9565c138834e630",
+  "compiled_at": "2026-08-30T16:15:54.798280+00:00",
   "description": "High-compliance regulated workflow decision support tool.",
   "t2_enabled": true,
   "pii_mode": "block-and-explain",
@@ -37,6 +37,17 @@
     "ORG": 0.7
   },
   "pii_aggregation": "max",
+  "grounding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "toxicity_model": "unitary/toxic-bert",
+  "grounding_min_claim_tokens": 6,
+  "toxicity_label_weights": {
+    "identity_attack": 1.0,
+    "threat": 1.0,
+    "severe_toxicity": 1.0,
+    "insult": 0.7,
+    "obscene": 0.5,
+    "toxicity": 0.6
+  },
   "injection_threshold": 0.5,
   "injection_action": "block",
   "injection_evasion_penalty": 0.15,
@@ -46,6 +57,7 @@
     "caching_enabled",
     "detector_critical_thresholds",
     "fail_mode",
+    "grounding_model",
     "grounding_threshold",
     "high_band",
     "injection_action",
@@ -58,6 +70,8 @@
     "secret_min_length",
     "t0_floor_severity",
     "t0_severity_scores",
+    "toxicity_label_weights",
+    "toxicity_model",
     "toxicity_threshold"
   ]
 }

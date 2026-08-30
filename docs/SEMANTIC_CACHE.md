@@ -1,9 +1,13 @@
 # Semantic Cache
 
 **Status:** Implemented. `data_plane/cache.py`, wired into `data_plane/gateway.py`.
-34 cache tests; **187 passing overall**. Closes a live policy hole (§6) and consumes
+37 cache tests; **217 passing overall**. Closes a live policy hole (§6) and consumes
 `caching_enabled` / `cache_threshold`, which were compiled into every bundle and read by
 nothing.
+
+> **Updated when Tier 1 landed.** Live grounding and toxicity detectors added a third
+> way for an exchange to be unstorable — one that did not exist when this was written.
+> See §2C.
 
 > **A cache hit is a decision to skip the checks.** That is the whole design problem.
 > Everything in this document is about when a past verdict may stand in for a fresh one.
@@ -59,6 +63,7 @@ refused, and each refusal has a specific failure behind it:
 | `FLAG` | carries a review obligation that a replay would silently drop |
 | `BLOCK` | must never be replayable at all |
 | provider refusal | not an answer |
+| **any detector failed** | the response was never verified — see §2C |
 
 Storing anything else would cache a remedy alongside its text and then serve the text
 alone.
@@ -76,6 +81,31 @@ The point is the sentence it lets the system say to an auditor:
 
 *"Nothing except cache hits"* is a much weaker sentence, and it costs 0.036 ms to avoid
 saying it.
+
+### C. An unverified response is never remembered
+
+This is the cache half of **T1-7**, and it only became reachable when live T1 detectors
+landed.
+
+`fail_mode` decides what to **deliver** when a detector could not verify a response.
+The cache decides what to **remember** — and that is the more consequential half,
+because remembering outlives the request that produced it.
+
+The asymmetry with §2B is the point:
+
+| | re-run on a hit? | consequence of caching an unverified answer |
+| :--- | :--- | :--- |
+| **T0** | **yes**, every hit | a bad entry is caught at serve time and evicted |
+| **T1** (grounding, toxicity) | **no**, ever | the failure is frozen into the entry and replayed to every subsequent match |
+
+So a single transient T1 exception — a model load hiccup, an OOM — under `fail_open`
+produces an `ALLOW` that was never actually checked, and without this guard that answer
+would be written to the cache and served indefinitely without any T1 detector ever
+looking at it again. **One flaky call becomes a permanently unverified answer.**
+
+The guard is therefore broader than the outcome table above: it refuses on
+`detector_status` containing any `failed` entry, whatever the action was. Regression:
+`TestUnverifiedResponsesAreNotRemembered`.
 
 ---
 
@@ -314,3 +344,10 @@ is the first question anyone asks about one.
   thresholds later tightened is still served, because `policy_hash` would have changed —
   so this is currently unreachable. It becomes reachable if bundles are ever versioned
   more loosely than by hash.
+* **A hit never re-runs T1** (§2C). Refusing to *store* an unverified response closes the
+  failure case, but a legitimately-verified entry is still served on later hits without
+  grounding or toxicity being recomputed. That is the intended saving — T1 is the
+  expensive tier — and it is sound only because `policy_hash`, `context_docs` and
+  `system_prompt` are all exact-matched in the key, so nothing the detectors would read
+  has changed. Worth restating whenever a new fuzzy dimension is proposed for the key:
+  **every dimension made fuzzy is a T1 result being extrapolated across it.**

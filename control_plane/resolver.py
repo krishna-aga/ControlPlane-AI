@@ -74,7 +74,16 @@ MAP_HIGHER_IS_STRICTER = {
     # more since fusion moved to max aggregation: the table is read directly rather than
     # diluted, so zeroing it silences Tier 0's contribution outright.
     "t0_severity_scores",
+    # Same argument as t0_severity_scores, one detector over: under max aggregation the
+    # table is read directly, so zeroing an entry (e.g. threat: 0) silences that label
+    # outright rather than diluting it (docs/TIER_1.md T1-6).
+    "toxicity_label_weights",
 }
+
+# grounding_model / toxicity_model are deliberately UNREGISTERED here, which routes them
+# through the generic fallback (fail closed: immutable). There is no ordering on model
+# identity - swapping models isn't "stricter" or "looser" - so immutable is correct
+# rather than an oversight (docs/TIER_1.md T1-1).
 
 # Enums ordered least -> most strict. Locking one should permit tightening,
 # not freeze it (see P3).
@@ -284,6 +293,13 @@ def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:
         "secret_entropy_ratio_threshold": 0.9,
         "ner_label_confidence": {"PERSON": 0.85, "GPE": 0.75, "ORG": 0.70},
         "pii_aggregation": "max",
+        "grounding_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "toxicity_model": "unitary/toxic-bert",
+        "grounding_min_claim_tokens": 6,
+        "toxicity_label_weights": {
+            "identity_attack": 1.0, "threat": 1.0, "severe_toxicity": 1.0,
+            "insult": 0.7, "obscene": 0.5, "toxicity": 0.6,
+        },
         "injection_threshold": 0.7,
         "injection_action": "flag",
         "injection_evasion_penalty": 0.15,

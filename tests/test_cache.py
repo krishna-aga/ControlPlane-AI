@@ -181,8 +181,16 @@ class TestNamespaceIsolation(unittest.TestCase):
         self.assertEqual(r.served_from, "upstream")
 
     def test_context_is_hashed_before_canary_planting(self):
-        """Canaries are minted per request; hashing the planted block would never hit."""
-        g = gw()
+        """
+        Canaries are minted per request; hashing the planted block would never hit.
+
+        Scripted short reply so grounding's claim filter (>= grounding_min_claim_tokens)
+        excludes it and grounding_similarity stays None - this test is about namespace
+        hashing, not grounding, and the unscripted MockAdapter default ("Certainly -
+        happy to help with that.") is genuinely ungrounded against "stable chunk",
+        which would otherwise BLOCK the response and make it uncacheable.
+        """
+        g = gw(scripted={"summarize": "OK."})
         ask(g, "summarize", context_docs=["stable chunk"])
         r = ask(g, "summarize", context_docs=["stable chunk"])
         self.assertEqual(r.served_from, "cache")
@@ -315,3 +323,45 @@ class TestBounds(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestUnverifiedResponsesAreNotRemembered(unittest.TestCase):
+    """
+    The cache half of T1-7.
+
+    `fail_mode` decides what to DELIVER when a detector could not verify a response. The
+    cache decides what to REMEMBER, and that is the more consequential half: the hit path
+    re-runs T0 but never re-runs T1, so a single transient T1 failure written into an
+    entry is never checked again and is served to every subsequent match.
+    """
+
+    def _failing(self, monkey_target):
+        import data_plane.gateway as gwmod
+
+        def boom(*a, **kw):
+            raise RuntimeError("simulated detector failure")
+        original = getattr(gwmod, monkey_target)
+        setattr(gwmod, monkey_target, boom)
+        self.addCleanup(setattr, gwmod, monkey_target, original)
+
+    def test_a_failed_toxicity_detector_stops_the_write(self):
+        self._failing("score_toxicity")
+        g = gw()
+        first = ask(g, "what is your refund policy")
+        self.assertIn("could not verify", first.cache_skip_reason)
+        second = ask(g, "what is your refund policy")
+        self.assertEqual(second.served_from, "upstream",
+                         "an unverified answer must not be replayable")
+
+    def test_a_failed_grounding_detector_stops_the_write(self):
+        self._failing("score_grounding")
+        g = gw()
+        first = ask(g, "what does the doc say", context_docs=["refunds take 30 days"])
+        self.assertIn("could not verify", first.cache_skip_reason)
+        second = ask(g, "what does the doc say", context_docs=["refunds take 30 days"])
+        self.assertEqual(second.served_from, "upstream")
+
+    def test_the_skip_reason_names_the_detector(self):
+        self._failing("score_toxicity")
+        g = gw()
+        self.assertIn("toxicity", ask(g, "hello").cache_skip_reason)

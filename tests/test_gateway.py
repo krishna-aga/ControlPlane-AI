@@ -191,6 +191,33 @@ class TestT0FailureFailMode(unittest.TestCase):
         self.assertEqual(r.cache_skip_reason, "Tier 0 could not verify this response (T1-7); not cached")
 
 
+class TestTier1Wiring(unittest.TestCase):
+    """
+    Full-pipeline wiring for grounding and toxicity - real models, run through the
+    actual Gateway. Unit-level correctness is tests/test_tier1_detectors.py; this is
+    about the gateway calling them at the right time with the right arguments.
+    """
+
+    def test_grounding_only_runs_when_context_docs_present(self):
+        g = gw(scripted={"summarize": "Refunds are accepted within 30 days of purchase."})
+        r = g.process_request([{"role": "user", "content": "summarize"}], BUNDLES["customer_support"], "s")
+        self.assertNotIn("grounding", r.fusion.raw)
+
+    def test_grounding_runs_and_can_flip_the_action(self):
+        g = gw(scripted={"summarize": "We also offer free ponies with every order."})
+        r = g.process_request(
+            [{"role": "user", "content": "summarize"}], BUNDLES["customer_support"], "s",
+            context_docs=["Refund policy: items may be returned within 30 days of purchase."],
+        )
+        self.assertIn("grounding", r.fusion.raw)
+        self.assertEqual(r.fusion.dominant_detector, "grounding")
+
+    def test_toxicity_runs_on_every_request(self):
+        g = gw()
+        r = g.process_request([{"role": "user", "content": "hi"}], BUNDLES["customer_support"], "s")
+        self.assertIn("toxicity", r.fusion.raw)
+
+
 class TestMultiTurn(unittest.TestCase):
     """The tenant owns the conversation; the gateway owns the risk posture."""
 
