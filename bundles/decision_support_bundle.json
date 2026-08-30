@@ -1,8 +1,8 @@
 {
   "policy_name": "decision-support-tool",
   "policy_version": "v1.0.0",
-  "policy_hash": "4b99c2345579544a49cd51d4c16ef03d8b4dac104d2117679222646660c5b58d",
-  "compiled_at": "2026-08-29T12:53:11.125951+00:00",
+  "policy_hash": "cc073f17d933bb36434e52321fd50b07bdefc8125f44bdfd6f9ad459bb406655",
+  "compiled_at": "2026-08-30T06:14:13.028314+00:00",
   "description": "High-compliance regulated workflow decision support tool.",
   "latency_budget_ms": 800,
   "t2_enabled": true,
@@ -22,8 +22,32 @@
     "grounding": 0.2,
     "toxicity": 0.2
   },
+  "detector_critical_thresholds": {
+    "pii": 0.9,
+    "grounding": 0.9,
+    "toxicity": 0.95
+  },
+  "t0_severity_scores": {
+    "hard": 1.0,
+    "high": 0.75,
+    "medium": 0.4,
+    "low": 0.15
+  },
+  "t0_aggregation": "max",
+  "blocklist_terms": [],
+  "secret_min_length": 24,
+  "secret_entropy_ratio_threshold": 0.9,
+  "ner_label_confidence": {
+    "PERSON": 0.85,
+    "GPE": 0.75,
+    "ORG": 0.7
+  },
+  "pii_aggregation": "max",
   "locked_fields": [
-    "pii_threshold",
-    "grounding_threshold"
+    "grounding_threshold",
+    "toxicity_threshold",
+    "low_band",
+    "high_band",
+    "pii_threshold"
   ]
 }

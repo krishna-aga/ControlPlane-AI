@@ -26,9 +26,12 @@
 
 ### C. Compiled Bundles (`bundles/`)
 Generated, immutable JSON bundles ready for Data Plane loading:
-* `bundles/customer_support_bundle.json` (`policy_hash: 9e5e653c18d4b3ff896315642e95caf8dfc026e21db29ba8b3b054db17d68496`)
-* `bundles/decision_support_bundle.json` (`policy_hash: 4b99c2345579544a49cd51d4c16ef03d8b4dac104d2117679222646660c5b58d`)
-* `bundles/internal_copilot_bundle.json` (`policy_hash: 0cb97cf2742d2543aa440ce042f46426d0c85ba8fc58ea2ed0daef92d1b26232`)
+* `bundles/customer_support_bundle.json` (`policy_hash: abf9c48404b54d90b8cfc11c937de01a5789b1b1a405cfb8e4f1b0617fcdc8ae`)
+* `bundles/decision_support_bundle.json` (`policy_hash: cc073f17d933bb36434e52321fd50b07bdefc8125f44bdfd6f9ad459bb406655`)
+* `bundles/internal_copilot_bundle.json` (`policy_hash: 3fac854a401a11b2c3d6f74ca8a2ed324e3a13a2711b595411fb949b104d2695`)
+
+> Hashes changed when the bundles gained `detector_critical_thresholds`, `t0_severity_scores`,
+> and the T0/T1 detector configuration fields. See `docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md`.
 
 ### D. Automated Test Suite (`tests/test_control_plane.py`)
 Run via `.venv/bin/python3 -m unittest discover -s tests`:
@@ -37,7 +40,9 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
 * `test_stricter_override_allowed`: Verifies that a stricter override (`pii_threshold: 0.5`) is allowed.
 * `test_latency_budget_exceeded`: Verifies `LatencyBudgetExceededError` when $200\text{ ms}$ budget cannot fit enabled T2 judge ($645\text{ ms}$ required).
 * `test_hash_reproducibility`: Asserts identical parameters produce identical SHA-256 hashes.
-* **Test Status:** 5/5 tests passing cleanly in $0.013\text{ seconds}$.
+* `TestLockingDirection` (5 tests): Regression cover for **P1** — `grounding_threshold` is a similarity *floor*, so raising it is stricter; the lock was previously inverted. Also covers newly-locked `toxicity_threshold` and enum tightening.
+* `TestStructuralValidators` (4 tests): Rejects inverted risk bands, `detector_weights` not summing to $1.0$, and critical thresholds below the detection midpoint.
+* **Test Status:** 14/14 tests passing cleanly in $0.022\text{ seconds}$.
 
 ---
 

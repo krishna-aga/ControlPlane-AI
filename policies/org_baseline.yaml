@@ -24,7 +24,40 @@ detector_weights:
   grounding: 0.2
   toxicity: 0.2
 
+# Per-detector critical floors, on the NORMALIZED S scale (0.5 == detection threshold).
+# A detector reaching its critical value floors fused risk at high_band regardless of
+# weights. Without this, no single T1 detector can trigger any action: a 99%-confidence
+# toxic response fuses to 0.197 and resolves to ALLOW.
+detector_critical_thresholds:
+  pii: 0.90
+  grounding: 0.90
+  toxicity: 0.95
+
+# Tier 0 emits categorical severities rather than threshold-normalized scores.
+t0_severity_scores:
+  hard: 1.0
+  high: 0.75
+  medium: 0.40
+  low: 0.15
+t0_aggregation: max
+
+# Tier 0 secret detection
+secret_min_length: 24
+secret_entropy_ratio_threshold: 0.9
+blocklist_terms: []
+
+# Tier 1 NER: spaCy exposes no per-entity confidence, so label reliability is
+# supplied here and is a calibration target for the Learning Plane.
+ner_label_confidence:
+  PERSON: 0.85
+  GPE: 0.75
+  ORG: 0.70
+pii_aggregation: max
+
 # Fields locked by enterprise compliance - inner layers can ONLY tighten these fields
 locked_fields:
   - pii_threshold
   - grounding_threshold
+  - toxicity_threshold
+  - low_band
+  - high_band

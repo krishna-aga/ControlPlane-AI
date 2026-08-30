@@ -1,8 +1,8 @@
 {
   "policy_name": "internal-employee-copilot",
   "policy_version": "v1.0.0",
-  "policy_hash": "0cb97cf2742d2543aa440ce042f46426d0c85ba8fc58ea2ed0daef92d1b26232",
-  "compiled_at": "2026-08-29T12:53:11.463041+00:00",
+  "policy_hash": "3fac854a401a11b2c3d6f74ca8a2ed324e3a13a2711b595411fb949b104d2695",
+  "compiled_at": "2026-08-30T06:14:13.267028+00:00",
   "description": "Internal enterprise employee assistant.",
   "latency_budget_ms": 400,
   "t2_enabled": false,
@@ -22,8 +22,32 @@
     "grounding": 0.2,
     "toxicity": 0.2
   },
+  "detector_critical_thresholds": {
+    "pii": 0.9,
+    "grounding": 0.9,
+    "toxicity": 0.95
+  },
+  "t0_severity_scores": {
+    "hard": 1.0,
+    "high": 0.75,
+    "medium": 0.4,
+    "low": 0.15
+  },
+  "t0_aggregation": "max",
+  "blocklist_terms": [],
+  "secret_min_length": 24,
+  "secret_entropy_ratio_threshold": 0.9,
+  "ner_label_confidence": {
+    "PERSON": 0.85,
+    "GPE": 0.75,
+    "ORG": 0.7
+  },
+  "pii_aggregation": "max",
   "locked_fields": [
+    "high_band",
     "pii_threshold",
-    "grounding_threshold"
+    "grounding_threshold",
+    "toxicity_threshold",
+    "low_band"
   ]
 }

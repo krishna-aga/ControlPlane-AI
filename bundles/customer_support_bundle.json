@@ -1,8 +1,8 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "e1607a811b9bf004472b365b9f132999b5fe26e05d1c9ab9736ee8fe755d7aa2",
-  "compiled_at": "2026-08-29T12:53:10.783378+00:00",
+  "policy_hash": "abf9c48404b54d90b8cfc11c937de01a5789b1b1a405cfb8e4f1b0617fcdc8ae",
+  "compiled_at": "2026-08-30T06:14:12.812607+00:00",
   "description": "Optimized for fast response times and customer interaction.",
   "latency_budget_ms": 200,
   "t2_enabled": false,
@@ -22,8 +22,32 @@
     "grounding": 0.2,
     "toxicity": 0.2
   },
+  "detector_critical_thresholds": {
+    "pii": 0.9,
+    "grounding": 0.9,
+    "toxicity": 0.95
+  },
+  "t0_severity_scores": {
+    "hard": 1.0,
+    "high": 0.75,
+    "medium": 0.4,
+    "low": 0.15
+  },
+  "t0_aggregation": "max",
+  "blocklist_terms": [],
+  "secret_min_length": 24,
+  "secret_entropy_ratio_threshold": 0.9,
+  "ner_label_confidence": {
+    "PERSON": 0.85,
+    "GPE": 0.75,
+    "ORG": 0.7
+  },
+  "pii_aggregation": "max",
   "locked_fields": [
-    "grounding_threshold",
-    "pii_threshold"
+    "high_band",
+    "low_band",
+    "pii_threshold",
+    "toxicity_threshold",
+    "grounding_threshold"
   ]
 }
