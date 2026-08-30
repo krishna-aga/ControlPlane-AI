@@ -2,11 +2,12 @@
 
 **Status:** Implemented. `data_plane/canary.py`, `data_plane/detectors/t0.py`,
 `Finding`/`T0Result` in `data_plane/models.py`, categorical floor in
-`data_plane/fusion.py`. 37 T0 tests; 107 passing overall.
+`data_plane/fusion.py`. 44 T0 tests; 114 passing overall.
 
 Implements [`t0_deterministic_checks.md`](../.agents/skills/t0_deterministic_checks.md)
-and resolves T0-1, T0-2, T0-4, T0-6 and T0-8 from the locking register. Two new defects
-were found during implementation and are recorded here as **T0-9** and **T0-10**.
+and resolves T0-1, T0-2, T0-4, T0-6 and T0-8 from the locking register. Three further
+defects were found while implementing and testing it — **T0-9**, **T0-10** and
+**T0-11** — all now fixed and recorded in §4.
 
 ---
 
@@ -176,7 +177,7 @@ far more than the ~0.01 ms the check takes.
 
 ---
 
-## 4. New defects found during implementation
+## 4. Defects found during implementation
 
 ### T0-9 — the spec's dictionary guard is unreachable
 
@@ -191,56 +192,122 @@ suppress."*
 credential-ish assignment context — prose inside `password = "..."` is genuinely
 suspicious, and `description = "..."` never reaches this code.
 
-### T0-10 — the entropy threshold has a large false-negative rate — **open**
+### T0-10 — the entropy threshold missed most real secrets — **fixed**
 
 The spec's reference table was derived from **hand-constructed all-distinct strings**,
-not sampled randomness. Its own motivating example gives away the problem:
+not sampled randomness. Its own motivating example gives the problem away:
 
 ```
 aB3xK9mP2qL7vN4wR8tY6uZ1   len=24  distinct=24  ratio=1.000
 ```
 
-Every character distinct means entropy is maximal *by construction*. Real random strings
-repeat characters. Measured over 200 samples per length, against the shipped threshold
-of `0.9`:
+Twenty-four distinct characters means entropy is maximal *by construction* — and that
+string uses a 62-symbol alphanumeric alphabet. Hex has only **16** symbols, so drawing
+24 characters makes repeats mathematically unavoidable; real hex secrets land at 12–14
+distinct and score 0.84–0.89.
 
-| Charset | Length | mean ratio | missed at 0.9 |
+**The threshold was calibrated on a 62-symbol alphabet and applied to a 16-symbol one,
+where that score is unreachable.**
+
+Measured against the shipped threshold of `0.9`, before the fix:
+
+| charset | length | mean ratio | missed |
 | :--- | ---: | ---: | ---: |
-| hex | 24 | 0.868 | **157 / 200** |
-| hex | 32 | 0.901 | 89 / 200 |
-| hex | 48 | 0.937 | 15 / 200 |
-| hex | 64 | 0.957 | 0 / 200 |
-| alphanumeric | 24 | 0.926 | 34 / 200 |
+| hex | 24 | 0.868 | **227 / 300** |
+| hex | 32 | 0.903 | 127 / 300 |
+| hex | 48 | 0.935 | 28 / 300 |
+| alphanumeric | 24 | 0.923 | 57 / 300 |
 
-At `secret_min_length = 24` — the shipped default — Track 2 misses roughly **78% of
-genuinely random hex secrets**. The spec's claim that normalization makes one scalar
-threshold valid across every charset does not survive contact with sampled data:
-**residual length dependence remains**, because a 24-character draw from a 16-symbol
-alphabet cannot approach uniformity.
+At the shipped `secret_min_length = 24`, Track 2 was missing roughly **78% of genuinely
+random hex secrets**.
 
-The spec's own RFC example is also mis-stated: `550e8400-e29b-41d4-a716-446655440000`
-is claimed at `0.96` but measures **0.812** — it is a non-random canonical example with
-13 distinct characters out of 32.
+#### Root cause
 
-Separator stripping is nonetheless confirmed load-bearing:
+`normalized_entropy` divided by the **theoretical maximum**, `log2(k)` — a score
+randomness does not reach. The spec's own `min(log2 k, log2 n)` was an attempt to remove
+length dependence and did not, because the binding constraint is not the ceiling but the
+*sampling bias* of estimating entropy from few draws.
+
+#### Fix: divide by expected-random entropy, not by the maximum
+
+The denominator is now the entropy a genuinely random string of the same length and
+alphabet would actually score, via the **Miller–Madow bias correction**:
+
+$$E[H] = \log_2(k) - \frac{k-1}{2n \ln 2}$$
+
+|  | theoretical max | expected random |
+| :--- | ---: | ---: |
+| hex, 24 chars | 4.000 | **3.549** |
+| hex, 48 chars | 4.000 | **3.775** |
+| alphanumeric, 24 chars | 4.585 | **4.121** |
+
+It is a grading curve: the question changes from *"how close is this to perfect?"* to
+*"how close is this to what randomness actually produces at this length?"* A random
+string now scores ≈1.0 at **any** length and **any** alphabet — which is what the spec's
+"one scalar threshold across every charset" claim required and never delivered.
+
+#### Measured after the fix — same threshold, same length floor
+
+| charset | length | recall before | **recall after** |
+| :--- | ---: | ---: | ---: |
+| hex | 24 | 22% | **95.3%** |
+| hex | 32 | 58% | **98.0%** |
+| hex | 48 | 91% | **100%** |
+| alphanumeric | 24 | 81% | **100%** |
+
+The false-positive margin is preserved — non-random strings rise, but far less than
+random ones, so the gap widens rather than closing:
+
+| string | before | after |
+| :--- | ---: | ---: |
+| `password_password_password_1234` | 0.673 | 0.738 |
+| `correcthorsebatterystaple` | 0.724 | 0.802 |
+| `supportticketreferenceid` | 0.754 | 0.838 |
+| `mycompanyname2024internal` | 0.797 | 0.883 |
+| 24 identical characters | 0.000 | 0.000 |
+
+Random now clusters at 0.98–1.00 and non-random at 0.74–0.88, so the `0.9` threshold
+sits cleanly in a ~0.10 gap. The tightest case is `mycompanyname2024internal` at 0.883 —
+and it would have to appear as `api_key = "mycompanyname2024internal"` to be tested at
+all.
+
+The originally-reported case:
 
 ```
-6b0d549b-6f03-675a-1600-a35a099950d8
-  unstripped → charset classified as printable(95) → ratio 0.687   ✗
-  stripped   → charset classified as hex(16)       → ratio 0.857   ✓
+db_password = "8db03397863983ead5ea8804"
+  before  ratio 0.838  →  no finding, secret leaks
+  after   ratio 0.944  →  GENERIC_SECRET / high
 ```
 
-**Not fixed, because the fix is a policy decision.** Options:
+Ratios are **clamped to [0, 1]**: Miller–Madow slightly undershoots for large alphabets,
+so a maximally-random alphanumeric string computes just above 1.0.
 
-1. **Raise `secret_min_length` to ~48.** Miss rate drops to 7.5%. Defensible — every
-   credential the spec cites at 20–40 characters (AWS, GitHub, Slack, OpenAI) carries a
-   prefix and is caught by Track 1 anyway.
-2. **Lower the threshold to ~0.82.** Catches more hex, but prose sits at 0.73–0.75, so
-   the margin shrinks to about 0.07 and false positives rise.
-3. **Accept it.** Track 1 does ~90% of the work; Track 2 is a backstop.
+#### Rejected alternatives
 
-Both fields are locked and bundle-driven, so this is exactly the calibration target the
-Learning Plane's sweep exists to tune. It should not be left at a guess.
+* **Raise `secret_min_length` to 48.** Considered and rejected — it *reduces* detection.
+  A 24-character secret falls below the floor and is never examined, taking recall at
+  that length from 22% to zero. It is an honesty argument, not a recall argument.
+* **Lower the threshold to 0.83.** Works, but leaves only ~0.03 of margin above
+  `mycompanyname2024internal` and does nothing about the underlying length dependence —
+  it would need re-tuning for every new length and charset.
+
+### T0-11 — the assignment regex missed every prefixed key name — **fixed**
+
+Found while tracing the T0-10 case end to end. The pattern used `\b` immediately before
+the keyword, but `_` is a word character, so there is no boundary between `_` and
+`password`:
+
+```
+password = "..."       match
+db_password = "..."    NO MATCH   ← missed
+my_api_key = "..."     NO MATCH   ← missed
+user_token: "..."      NO MATCH   ← missed
+```
+
+Prefixed key names are the normal convention in real configuration, so Track 2 was
+silently missing most of its actual targets **regardless of any threshold**. A
+`[A-Za-z0-9_]*` prefix now precedes the keyword. Regression:
+`test_prefixed_key_names_are_matched`.
 
 ---
 

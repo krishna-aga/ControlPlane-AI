@@ -125,6 +125,16 @@ $$\max H = \log_2(\text{alphabet size}) \qquad \text{AND} \qquad \max H = \log_2
 * **Ceiling 1 (alphabet).** Hex has 16 symbols → $\log_2 16 = 4.0$, a hard cap. A flat threshold of $4.5$ (truffleHog's base64 default) is *mathematically unreachable* for hex and would never catch a hex secret.
 * **Ceiling 2 (length).** A 10-char string has ≤10 distinct chars → caps at $\log_2 10 = 3.32$. The problem is not that short strings score too high — it is that they lose all **discriminating power**: `abcdefghij` also scores 3.32, identical to a random 10-char string. Random and non-random converge and the test stops working.
 
+> **⚠ CORRECTED IN IMPLEMENTATION (T0-10).** The reference values in this section were
+> derived from hand-constructed all-distinct strings, not sampled randomness — the
+> motivating example `aB3xK9mP2qL7vN4wR8tY6uZ1` scores 1.000 only because all 24 of its
+> characters differ, which is impossible for a 16-symbol hex alphabet. Dividing by the
+> theoretical ceiling `log2(k)` missed **227 of 300** random 24-char hex secrets. The
+> denominator is now the *expected* entropy of a random string of the same shape
+> (Miller–Madow), which lifts recall to 95%+ at the same threshold. The RFC UUID example
+> below is also mis-stated: claimed 0.96, measures 0.812. See
+> [`docs/TIER_0.md`](../../docs/TIER_0.md) §4.
+
 #### Solution 1 — Normalized entropy ratio
 
 Compare against the string's own ceiling rather than an absolute number:

@@ -50,8 +50,13 @@ _TRACK1_COMPILED = [(name, re.compile(p)) for name, p in _TRACK1]
 # Assignment context is mandatory. Entropy ALONE is never sufficient: git SHAs, UUIDs,
 # file hashes, base64 images, minified JS and our own CP-CANARY tokens are all
 # high-entropy non-secrets.
+# NOTE the `[A-Za-z0-9_]*` prefix. A leading \b alone silently misses every prefixed
+# key name - `db_password`, `my_api_key`, `user_token` - because the underscore is a
+# word character, so there is no boundary between `_` and the keyword. Prefixed names
+# are the common convention in real config, so this was a systematic miss.
 _ASSIGNMENT = re.compile(
-    r"(?i)\b(api[_-]?key|secret|token|password|passwd|pwd|auth|credential|access[_-]?key)\b"
+    r"(?i)\b[A-Za-z0-9_]*"
+    r"(?:api[_-]?key|secret|token|password|passwd|pwd|auth|credential|access[_-]?key)\b"
     r"\s*[:=]\s*[\"']?([A-Za-z0-9+/=_-]{8,})[\"']?"
 )
 _BEARER = re.compile(r"(?i)\bauthorization\s*:\s*bearer\s+([A-Za-z0-9+/=._-]{8,})")
@@ -98,24 +103,52 @@ def detect_charset_size(s: str) -> int:
     return 95
 
 
+def expected_random_entropy(alphabet_size: int, length: int) -> float:
+    """
+    Expected Shannon entropy of a genuinely RANDOM string of this length over this
+    alphabet — the Miller-Madow bias correction for entropy estimated from a finite
+    sample:
+
+        E[H] = log2(k) - (k - 1) / (2n * ln2)
+
+    This is the denominator `normalized_entropy` divides by, and it is the fix for
+    T0-10. The spec divided by the THEORETICAL maximum, log2(k), which randomness does
+    not reach: drawing 24 characters from a 16-symbol alphabet makes repeats
+    unavoidable, so real random hex measures ~3.47 against a ceiling of 4.00 and scores
+    0.868 — under the 0.9 threshold, and therefore missed. 227 of 300 sampled 24-char
+    hex secrets were missed that way.
+
+    Dividing by what randomness ACTUALLY produces makes the ratio ~1.0 for random
+    strings at any length and any alphabet, which is what the spec's
+    `min(log2 k, log2 n)` was trying to achieve and did not.
+    """
+    if length < 2 or alphabet_size < 2:
+        return 1.0                                   # degenerate guard
+    estimate = math.log2(alphabet_size) - (alphabet_size - 1) / (2 * length * math.log(2))
+    # A string of n characters cannot carry more than log2(n) bits regardless of alphabet.
+    estimate = min(estimate, math.log2(length))
+    # Floor keeps the denominator sane when the correction term dominates (large k, small n).
+    return max(estimate, 0.5)
+
+
 def normalized_entropy(s: str) -> float:
     """
-    Entropy against the string's own ceiling, so ONE threshold works across every
-    charset. Raw entropy has two ceilings - alphabet size and string length - and
-    whichever binds is the right denominator.
+    Entropy relative to what a random string of the same shape would score, so ONE
+    threshold works across every charset AND every length.
 
     Separator stripping is mandatory, not cosmetic. Hyphens impose a double penalty:
     they lower raw entropy AND push charset classification out of hex(16) into
-    printable(95), raising the ceiling. Without stripping, a UUID-format API key is a
-    systematic false negative (ratio 0.66 vs 0.96).
+    printable(95), raising the denominator. Without stripping, a UUID-format API key is
+    a systematic false negative (0.687 vs 0.857 measured).
+
+    Clamped to [0, 1]: the Miller-Madow estimate slightly undershoots for large
+    alphabets, so a maximally-random alphanumeric string can compute above 1.0.
     """
     core = s.strip(_SEPARATORS).replace("-", "").replace("_", "")
     if len(core) < 2:
         return 0.0
-    ceiling = min(math.log2(detect_charset_size(core)), math.log2(len(core)))
-    if ceiling <= 0:
-        return 0.0
-    return shannon_entropy(core) / ceiling
+    denominator = expected_random_entropy(detect_charset_size(core), len(core))
+    return max(0.0, min(shannon_entropy(core) / denominator, 1.0))
 
 
 def looks_like_placeholder(value: str) -> bool:

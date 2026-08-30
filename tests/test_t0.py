@@ -4,12 +4,15 @@ register's T0-1/T0-4/T0-6 resolutions and the floor that replaces Track 2's hard
 """
 
 import json
+import math
+import random
+import string
 import unittest
 
 from data_plane import canary
 from data_plane.detectors.t0 import (
-    classify_generic_secret, detect_charset_size, is_mostly_dictionary_words,
-    looks_like_placeholder, normalized_entropy, run_t0,
+    classify_generic_secret, detect_charset_size, expected_random_entropy,
+    is_mostly_dictionary_words, looks_like_placeholder, normalized_entropy, run_t0,
 )
 from data_plane.fusion import fuse
 from data_plane.input_gate import get_bundle
@@ -148,6 +151,21 @@ class TestSecretsTrack2(unittest.TestCase):
         self.assertEqual(secrets_found[0].severity, "high")
         self.assertFalse(r.hard_override, "a heuristic must not veto the cascade")
 
+    def test_prefixed_key_names_are_matched(self):
+        """
+        Regression: a leading \\b before the keyword silently misses every prefixed key
+        name, because the underscore is a word character so there is no boundary between
+        `_` and `password`. `db_password`, `my_api_key` and `user_token` are the common
+        convention in real config, so this was a systematic miss.
+        """
+        for text in ['db_password = "aB3xK9mP2qL7vN4wR8tY6uZ1"',
+                     'my_api_key = "aB3xK9mP2qL7vN4wR8tY6uZ1"',
+                     'user_token: "aB3xK9mP2qL7vN4wR8tY6uZ1"',
+                     'password = "aB3xK9mP2qL7vN4wR8tY6uZ1"']:
+            with self.subTest(text=text):
+                found = [f for f in t0(text).findings if f.entity_type == "GENERIC_SECRET"]
+                self.assertEqual(len(found), 1, f"missed in: {text}")
+
     def test_same_string_bare_in_prose_is_not_a_secret(self):
         """Assignment context is mandatory — entropy alone is never sufficient."""
         r = t0("The tracking code aB3xK9mP2qL7vN4wR8tY6uZ1 was issued.")
@@ -222,6 +240,65 @@ class TestEntropyMechanics(unittest.TestCase):
         self.assertTrue(looks_like_placeholder("YOUR_API_KEY_HERE"))
         self.assertTrue(is_mostly_dictionary_words("correcthorsebatterystaple"))
         self.assertFalse(is_mostly_dictionary_words("aB3xK9mP2qL7vN4wR8tY6uZ1"))
+
+
+class TestExpectedRandomNormalization(unittest.TestCase):
+    """
+    T0-10. The spec divided by the THEORETICAL maximum entropy, log2(k) — a score
+    randomness cannot reach. Drawing 24 characters from a 16-symbol alphabet makes
+    repeats unavoidable, so real random hex measured 0.868 against a ceiling of 4.000
+    and fell under the 0.9 threshold: 227 of 300 sampled secrets were missed.
+
+    Dividing by the EXPECTED entropy of a random string of the same shape
+    (Miller-Madow) makes the ratio ~1.0 for random input at any length and alphabet.
+    """
+
+    def _random(self, alphabet, n, count, seed):
+        rng = random.Random(seed)
+        return ["".join(rng.choice(alphabet) for _ in range(n)) for _ in range(count)]
+
+    def test_denominator_is_below_the_theoretical_maximum(self):
+        """The whole fix in one assertion: grade against real randomness, not perfection."""
+        self.assertLess(expected_random_entropy(16, 24), math.log2(16))
+        self.assertLess(expected_random_entropy(62, 24), math.log2(62))
+
+    def test_denominator_approaches_the_maximum_as_length_grows(self):
+        """Sampling bias shrinks with more draws, so the correction should shrink too."""
+        short, long = expected_random_entropy(16, 24), expected_random_entropy(16, 512)
+        self.assertLess(short, long)
+        self.assertAlmostEqual(long, math.log2(16), places=1)
+
+    def test_random_secrets_are_caught_at_every_length(self):
+        """Regression for the 78% miss rate at the shipped defaults."""
+        bundle = get_bundle(CS)
+        for n, floor in [(24, 0.85), (32, 0.90), (48, 0.95)]:
+            with self.subTest(length=n):
+                samples = self._random("0123456789abcdef", n, 200, seed=n)
+                caught = sum(1 for s in samples if classify_generic_secret(s, bundle) == "high")
+                self.assertGreaterEqual(
+                    caught / 200, floor,
+                    f"recall {caught}/200 at {n} hex chars is below {floor:.0%}",
+                )
+
+    def test_non_random_strings_stay_below_the_threshold(self):
+        """The margin the fix must not eat: random clusters ~0.98, non-random ~0.74-0.88."""
+        for s in ["supportticketreferenceid", "mycompanyname2024internal",
+                  "abcdefghijabcdefghijabcd"]:
+            with self.subTest(s=s):
+                self.assertLess(normalized_entropy(s), 0.9)
+
+    def test_ratio_is_clamped_to_unit_range(self):
+        """Miller-Madow undershoots slightly for large alphabets, so raw ratios can exceed 1."""
+        for s in self._random(string.ascii_letters + string.digits, 24, 100, seed=11):
+            self.assertLessEqual(normalized_entropy(s), 1.0)
+            self.assertGreaterEqual(normalized_entropy(s), 0.0)
+
+    def test_the_reported_regression_case(self):
+        """`db_password = "8db03397863983ead5ea8804"` was leaking silently."""
+        r = t0('db_password = "8db03397863983ead5ea8804"')
+        found = [f for f in r.findings if f.entity_type == "GENERIC_SECRET"]
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0].severity, "high")
 
 
 class TestBlocklist(unittest.TestCase):
