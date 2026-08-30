@@ -4,7 +4,7 @@ Built using Pydantic v2 for robust schema validation and type safety.
 """
 
 from typing import Dict, List, Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PolicyLockingError(Exception):
@@ -14,6 +14,12 @@ class PolicyLockingError(Exception):
 
 class PolicyConfig(BaseModel):
     """Schema representing a raw or partial policy YAML file."""
+
+    # P8: reject unknown keys instead of dropping them. Pydantic's default is to ignore
+    # extras, so a typo - `pii_treshold: 0.1` - compiled clean with baseline enforcement
+    # silently intact and no warning. For a policy authoring surface that is the worst
+    # possible failure mode: the author believes they tightened something and did not.
+    model_config = ConfigDict(extra="forbid")
 
     policy_name: Optional[str] = None
     policy_version: Optional[str] = "v1.0.0"
@@ -103,6 +109,10 @@ class PolicyConfig(BaseModel):
 
 class BundleConfig(BaseModel):
     """Schema representing a compiled, resolved, immutable JSON policy bundle."""
+
+    # Also forbid extras here, so a field removed from the schema cannot linger in a
+    # resolved dict and be silently dropped from the bundle while still being hashed.
+    model_config = ConfigDict(extra="forbid")
 
     policy_name: str
     policy_version: str

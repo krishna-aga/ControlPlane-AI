@@ -16,7 +16,7 @@ This document captures a design review of the policy locking model and the detec
 | **P1** | `grounding_threshold` locking direction is **inverted** | **Live bug in shipped code** | **Fixed** (`a8d5103`) |
 | **P2** | `toxicity_threshold`, `low_band`, `high_band` are not locked | Policy hole | **Fixed** (`a8d5103`) |
 | **P3** | Locked enums are **immutable** rather than tightenable | Latent bug | **Fixed** (`a8d5103`) |
-| **P4** | `detector_weights` unlocked, and not lockable by the current comparison | Policy hole | **Resolved by removal** — `detector_weights` is deleted; fusion takes the max normalized score. (a) critical floors implemented; (b) weight floors moot; (c) map-aware locking **still open** for `detector_critical_thresholds` and `t0_severity_scores` |
+| **P4** | `detector_weights` unlocked, and not lockable by the current comparison | Policy hole | **Resolved by removal** — `detector_weights` is deleted; fusion takes the max normalized score. (a) critical floors implemented; (b) weight floors moot; (c) map-aware locking **implemented** — `_validate_locked_map()` with the removal guard; both maps now locked |
 | **P5** | No validator for band ordering or weight-sum integrity | Missing validation | **Fixed** (`a8d5103`) |
 | **N1** | `min(1, P/T)` **saturates**, destroying severity ordering | Design defect | **Fixed** — `fusion.normalize()`, raw scores in `ledger_row()` |
 | **N2** | Critical thresholds have no coherent scale across detectors | Design defect | **Fixed** — normalized S scale + `_validate_critical_coherence` |
@@ -29,9 +29,9 @@ This document captures a design review of the policy locking model and the detec
 | **T0-6** | Blocklist latency does not hold at realistic list sizes | Performance | Open |
 | **T0-7** | Hard-override short-circuit makes T0's own accuracy unmeasurable | Observability | Open |
 | **T0-8** | Canary matching is defeated by transformed exfiltration | Accepted limitation | Document |
-| **P6** | A locked field the baseline never *sets* is a silent no-op | Policy hole | Open |
+| **P6** | A locked field the baseline never *sets* is a silent no-op | Policy hole | **Fixed** — `_validate_locks_are_assigned()` rejects it at compile |
 | **P7** | `detector_weights` accepts negative values and unknown detector names | Missing validation | **Resolved by removal** — the field is deleted (see N4) |
-| **P8** | Unknown YAML keys are silently ignored (`extra="ignore"`) | Missing validation | Open |
+| **P8** | Unknown YAML keys are silently ignored (`extra="ignore"`) | Missing validation | **Fixed** — `extra="forbid"` on `PolicyConfig` and `BundleConfig` |
 | **N4** | Weight renormalization makes the same finding score differently depending on which *other* detectors ran | Design defect | **Fixed** — fusion takes the max normalized score; `detector_weights` removed. See [`RISK_FUSION.md`](RISK_FUSION.md) §5 |
 
 > **Two defects found after this register was written, recorded elsewhere:**
@@ -40,12 +40,14 @@ This document captures a design review of the policy locking model and the detec
 > own — see [`INPUT_GATE.md`](INPUT_GATE.md). Fusion is documented in
 > [`RISK_FUSION.md`](RISK_FUSION.md).
 >
-> **The single most load-bearing item still open:** map-aware locking (P4c) is
-> unimplemented and neither `detector_critical_thresholds` nor `t0_severity_scores` is in
-> `locked_fields`. A tenant can therefore raise every critical value to 1.0, drop a key to
-> remove one detector's floor, or zero every T0 severity — disabling the escalation paths
-> this document calls mandatory. `t0_severity_scores` matters more since N4: under max
-> aggregation it is read directly rather than diluted.
+> **P4c, P6, P7 and P8 are now closed.** `_validate_locked_map()` compares locked maps
+> entry by entry with a key-removal guard, and both `detector_critical_thresholds` and
+> `t0_severity_scores` are locked in the baseline. `_validate_locks_are_assigned()`
+> rejects a lock on a field the baseline never assigns. `extra="forbid"` rejects unknown
+> keys. P7 disappeared with `detector_weights`.
+>
+> **Remaining Control Plane gap:** the resolver is 2-tier only. Nothing above the
+> baseline can constrain it, so the baseline is trusted absolutely.
 
 P1–P5 are Control Plane. N1–N3 are the Data Plane normalization contract. T0-1–T0-8 are Tier 0 contract defects against [`t0_deterministic_checks.md`](file:///home/krishna/Projects/ControlPlane/.agents/skills/t0_deterministic_checks.md).
 
@@ -203,7 +205,10 @@ detector_weight_floors:
   toxicity: 0.15
 ```
 
-**(c) Map-aware locking**, since neither map works with scalar comparison:
+**(c) Map-aware locking**, since neither map works with scalar comparison.
+*Implemented as specified, including the removal guard — see `_validate_locked_map()`.
+`MAP_HIGHER_IS_STRICTER` now holds `t0_severity_scores` rather than the
+`detector_weight_floors` proposed below, which became moot when weights were removed:*
 
 ```python
 MAP_LOWER_IS_STRICTER  = {"detector_critical_thresholds"}   # lower fires sooner

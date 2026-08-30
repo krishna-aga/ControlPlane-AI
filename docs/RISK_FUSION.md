@@ -231,10 +231,11 @@ graded middle is the only place a ~600 ms judge changes an outcome.
   here but executed by the output stage, which does not exist yet.
 * **`REGENERATE` has no retry budget.** Nothing bounds the loop if a regenerated answer
   is also ungrounded. Needs a `max_regenerations` bundle field.
-* **`detector_critical_thresholds` is still not in `locked_fields`**, and map-aware
-  locking (P4c) is unimplemented — so a tenant can raise every critical value to 1.0 and
-  disable the floors this document calls load-bearing, or drop a key entirely and remove
-  one detector's floor.
-* **`t0_severity_scores` is read directly under max aggregation** and is likewise
-  unlocked, so the same evasion applies: setting every severity to 0.0 silences Tier 0's
-  contribution to fusion entirely. Both maps need the same fix.
+* ~~`detector_critical_thresholds` and `t0_severity_scores` unlocked~~ — **closed.**
+  Both are locked and compared entry by entry with a key-removal guard, so a tenant can
+  tighten them but cannot raise a critical value, drop a key, or zero a severity. See
+  P4c/P6/P8 in [`POLICY_LOCKING_AND_RISK_NORMALIZATION.md`](POLICY_LOCKING_AND_RISK_NORMALIZATION.md).
+* **`t0_severity_scores` values themselves remain the spec's estimate.** Under max
+  aggregation they are read directly rather than diluted, so `{hard 1.0, high 0.75,
+  medium 0.40, low 0.15}` now governs behaviour far more than it did. They are locked
+  against loosening, but the numbers still deserve a deliberate review.

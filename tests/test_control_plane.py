@@ -11,6 +11,8 @@ import sys
 import tempfile
 import unittest
 
+from pydantic import ValidationError
+
 from control_plane.models import BundleConfig, PolicyConfig, PolicyLockingError
 from control_plane.resolver import resolve_policy, load_yaml_policy
 from control_plane.compiler import compile_bundle, compute_policy_hash
@@ -241,6 +243,108 @@ class TestStructuralValidators(unittest.TestCase):
         for persona in ["customer_support", "decision_support", "internal_copilot"]:
             resolved = resolve_policy(base, load_yaml_policy(f"policies/{persona}.yaml"))
             self.assertLessEqual(resolved["low_band"], resolved["high_band"])
+
+
+class TestLockedMaps(unittest.TestCase):
+    """
+    P4c: maps need entry-by-entry comparison. A scalar check cannot express "every entry
+    at least as strict", and the generic fallback would freeze the map entirely rather
+    than allowing legitimate tightening.
+    """
+
+    def _baseline(self):
+        return load_yaml_policy("policies/org_baseline.yaml")
+
+    def test_both_maps_are_locked_by_the_baseline(self):
+        locked = self._baseline().locked_fields
+        self.assertIn("detector_critical_thresholds", locked)
+        self.assertIn("t0_severity_scores", locked)
+
+    def test_key_removal_is_rejected(self):
+        """
+        The load-bearing guard. Without it a tenant evades every per-key check by simply
+        omitting the key - dropping the grounding and toxicity floors entirely.
+        """
+        with self.assertRaises(PolicyLockingError) as ctx:
+            resolve_policy(self._baseline(),
+                           PolicyConfig(detector_critical_thresholds={"pii": 0.9}))
+        self.assertIn("cannot be removed", str(ctx.exception))
+
+    def test_critical_thresholds_lower_is_stricter(self):
+        base = self._baseline()
+        tightened = resolve_policy(
+            base, PolicyConfig(detector_critical_thresholds={"pii": 0.7, "grounding": 0.8, "toxicity": 0.9}))
+        self.assertEqual(tightened["detector_critical_thresholds"]["pii"], 0.7)
+
+        with self.assertRaises(PolicyLockingError):
+            resolve_policy(base, PolicyConfig(
+                detector_critical_thresholds={"pii": 1.0, "grounding": 1.0, "toxicity": 1.0}))
+
+    def test_t0_severity_scores_higher_is_stricter(self):
+        """
+        Matters more since fusion moved to max aggregation: the table is read directly
+        rather than diluted, so zeroing it silences Tier 0's contribution outright.
+        """
+        base = self._baseline()
+        tightened = resolve_policy(base, PolicyConfig(
+            t0_severity_scores={"hard": 1.0, "high": 0.9, "medium": 0.6, "low": 0.3}))
+        self.assertEqual(tightened["t0_severity_scores"]["medium"], 0.6)
+
+        with self.assertRaises(PolicyLockingError):
+            resolve_policy(base, PolicyConfig(
+                t0_severity_scores={"hard": 0.0, "high": 0.0, "medium": 0.0, "low": 0.0}))
+
+    def test_a_non_mapping_override_is_rejected(self):
+        with self.assertRaises(PolicyLockingError):
+            resolve_policy(self._baseline(), PolicyConfig(t0_severity_scores={}))
+
+
+class TestUnassignedLocks(unittest.TestCase):
+    """P6: a lock is only meaningful against a value."""
+
+    def test_locking_a_field_the_baseline_never_assigns_is_rejected(self):
+        """
+        The strictness check only fires when the key is present in the base dump, so
+        such a lock silently permits any override. It must fail at compile instead.
+        """
+        with self.assertRaises(PolicyLockingError) as ctx:
+            resolve_policy(PolicyConfig(locked_fields=["cache_threshold"]),
+                           PolicyConfig(cache_threshold=0.01))
+        self.assertIn("never assigns", str(ctx.exception))
+
+    def test_child_may_lock_a_field_it_sets_itself(self):
+        """
+        Only BASE-declared locks are checked. A child locking a field it assigns is
+        constraining downstream layers, not creating a no-op.
+        """
+        resolved = resolve_policy(
+            PolicyConfig(), PolicyConfig(cache_threshold=0.5, locked_fields=["cache_threshold"]))
+        self.assertEqual(resolved["cache_threshold"], 0.5)
+        self.assertIn("cache_threshold", resolved["locked_fields"])
+
+    def test_shipped_baseline_assigns_everything_it_locks(self):
+        base = load_yaml_policy("policies/org_baseline.yaml")
+        assigned = set(base.model_dump(exclude_unset=True))
+        self.assertEqual(sorted(set(base.locked_fields) - assigned), [])
+
+
+class TestUnknownKeysRejected(unittest.TestCase):
+    """P8: a typo must not compile clean with enforcement silently unchanged."""
+
+    def test_typo_in_a_policy_is_rejected(self):
+        with self.assertRaises(ValidationError):
+            PolicyConfig(**{"pii_treshold": 0.1})
+
+    def test_removed_fields_are_rejected_rather_than_ignored(self):
+        for gone in ("detector_weights", "latency_budget_ms"):
+            with self.subTest(field=gone):
+                with self.assertRaises(ValidationError):
+                    PolicyConfig(**{gone: 1})
+
+    def test_valid_policies_still_load(self):
+        for name in ("org_baseline", "customer_support", "decision_support", "internal_copilot"):
+            with self.subTest(policy=name):
+                self.assertIsNotNone(load_yaml_policy(f"policies/{name}.yaml"))
 
 
 class TestHashDeterminism(unittest.TestCase):

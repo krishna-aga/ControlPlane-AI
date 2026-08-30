@@ -51,6 +51,20 @@ HIGHER_IS_STRICTER = {
 BOOL_TRUE_IS_STRICTER = {"t2_enabled"}
 BOOL_FALSE_IS_STRICTER = {"allow_downrouting", "caching_enabled"}
 
+# Maps compared key-by-key. A scalar comparison cannot express "every entry must be at
+# least as strict", and locking a map with the generic fallback would freeze it entirely
+# rather than allowing legitimate tightening (P4c).
+MAP_LOWER_IS_STRICTER = {
+    # A lower critical value means the detector escalates on a weaker signal.
+    "detector_critical_thresholds",
+}
+MAP_HIGHER_IS_STRICTER = {
+    # A higher severity score means a Tier 0 finding contributes more risk. This matters
+    # more since fusion moved to max aggregation: the table is read directly rather than
+    # diluted, so zeroing it silences Tier 0's contribution outright.
+    "t0_severity_scores",
+}
+
 # Enums ordered least -> most strict. Locking one should permit tightening,
 # not freeze it (see P3).
 ENUM_STRICTNESS = {
@@ -91,6 +105,12 @@ def resolve_policy(base_policy: PolicyConfig, child_policy: PolicyConfig) -> Dic
     locked_fields: List[str] = sorted(set(
         resolved.get("locked_fields", []) + child_dict.get("locked_fields", [])
     ))
+
+    # P6: a lock is only meaningful against a value. The strictness check below only
+    # fires when the key is present in the base dump, so a field the baseline LISTS in
+    # locked_fields but never ASSIGNS is silently unprotected - the child may set it to
+    # anything. Fail at compile rather than shipping a bundle whose locks do nothing.
+    _validate_locks_are_assigned(base_policy, resolved)
 
     # Apply non-locked and locked overrides with strict validation
     for key, val in child_dict.items():
@@ -158,6 +178,9 @@ def _validate_locked_field_strictness(field_name: str, base_val: Any, new_val: A
                 f"Inner policy cannot disable it."
             )
 
+    elif field_name in MAP_LOWER_IS_STRICTER or field_name in MAP_HIGHER_IS_STRICTER:
+        _validate_locked_map(field_name, base_val, new_val)
+
     elif field_name in BOOL_FALSE_IS_STRICTER:
         if base_val is False and new_val is True:
             raise PolicyLockingError(
@@ -171,6 +194,57 @@ def _validate_locked_field_strictness(field_name: str, base_val: Any, new_val: A
             f"Field '{field_name}' is LOCKED by parent policy ({base_val}) and has no "
             f"registered strictness direction. Cannot override with '{new_val}'."
         )
+
+
+def _validate_locks_are_assigned(base_policy: PolicyConfig, base_assigned: Dict[str, Any]) -> None:
+    """
+    Every field the BASE locks must also be assigned by the base.
+
+    Only base-declared locks are checked. A child locking a field it sets itself is
+    constraining hypothetical downstream layers, and has no parent value to be compared
+    against in this resolution - that is meaningful, not a no-op.
+    """
+    unassigned = sorted(set(base_policy.locked_fields) - set(base_assigned))
+    if unassigned:
+        raise PolicyLockingError(
+            f"Baseline policy locks {unassigned} but never assigns "
+            f"{'them' if len(unassigned) > 1 else 'it'}. A locked field with no base "
+            f"value cannot be compared against, so the lock would silently permit any "
+            f"override. Assign a value or remove it from locked_fields."
+        )
+
+
+def _validate_locked_map(field_name: str, base_map: Any, new_map: Any) -> None:
+    """
+    Compare a locked map entry by entry.
+
+    The removal guard is the load-bearing line. Without it a tenant evades every
+    per-key check simply by omitting the key: `detector_critical_thresholds: {pii: 0.9}`
+    silently drops the grounding and toxicity floors, and `t0_severity_scores: {low: 0}`
+    drops the three severities that actually escalate.
+    """
+    if not isinstance(new_map, dict):
+        raise PolicyLockingError(
+            f"Field '{field_name}' is LOCKED and must remain a mapping (got {type(new_map).__name__})."
+        )
+
+    lower_is_stricter = field_name in MAP_LOWER_IS_STRICTER
+
+    for key, base_value in (base_map or {}).items():
+        if key not in new_map:
+            raise PolicyLockingError(
+                f"Field '{field_name}' is LOCKED by parent policy; key '{key}' cannot be "
+                f"removed. Dropping a key silently disables that detector's contribution."
+            )
+        new_value = new_map[key]
+        looser = (new_value > base_value) if lower_is_stricter else (new_value < base_value)
+        if looser:
+            direction = "lower" if lower_is_stricter else "higher"
+            raise PolicyLockingError(
+                f"Field '{field_name}['{key}']' is LOCKED by parent policy "
+                f"(base: {base_value}). Attempted looser setting ({new_value}). "
+                f"A {direction} value is required for strictness."
+            )
 
 
 def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:

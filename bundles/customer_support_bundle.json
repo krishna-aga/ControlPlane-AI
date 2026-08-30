@@ -1,8 +1,8 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "00fb3b1f3200c55af34329b25e57ba969d69c509dc2921bb951dc4229acf8541",
-  "compiled_at": "2026-08-30T09:52:22.202444+00:00",
+  "policy_hash": "5f273bdc37e18c455cedd2ac17ba118ae4faff3d314a127fd4e912d4c3c654f9",
+  "compiled_at": "2026-08-30T11:32:04.227918+00:00",
   "description": "Optimized for fast response times and customer interaction.",
   "t2_enabled": false,
   "pii_mode": "redact-and-proceed",
@@ -42,6 +42,7 @@
   "injection_evasion_penalty": 0.15,
   "input_risk_tightening": 0.5,
   "locked_fields": [
+    "detector_critical_thresholds",
     "fail_mode",
     "grounding_threshold",
     "high_band",
@@ -54,6 +55,7 @@
     "secret_entropy_ratio_threshold",
     "secret_min_length",
     "t0_floor_severity",
+    "t0_severity_scores",
     "toxicity_threshold"
   ]
 }

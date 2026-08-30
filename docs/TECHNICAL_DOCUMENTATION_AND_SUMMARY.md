@@ -61,7 +61,7 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
   (`compile_bundle.md` Validation Check 3). `test_hash_reproducibility` could not catch
   this — it hashes two hand-written dicts inside one interpreter, and the defect only
   appears across processes.
-* **Test Status:** 142/142 tests passing.
+* **Test Status:** 153/153 tests passing.
 
 ---
 

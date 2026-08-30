@@ -99,3 +99,8 @@ locked_fields:
   # secret detection by raising the ratio to 0.99 or the length floor out of range.
   - secret_min_length
   - secret_entropy_ratio_threshold
+  # Maps, compared key-by-key with a removal guard (P4c). Both are load-bearing:
+  # critical thresholds are what let a single detector escalate, and t0_severity_scores
+  # is read directly by max-aggregation fusion rather than diluted by a weight.
+  - detector_critical_thresholds
+  - t0_severity_scores

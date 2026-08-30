@@ -365,6 +365,7 @@ so. Fused risk is now the maximum normalized score, so `medium` stands at its ta
 value of **0.40**, above `low_band`, and a blocklist hit consistently reaches `REDACT`.
 
 The follow-on: `t0_severity_scores` is now read **directly** rather than diluted, so
-those four numbers govern behaviour far more than they did. They remain the spec's
-estimate and deserve a deliberate review — and the map is still unlocked, so a tenant can
-set every severity to 0.0 and silence Tier 0's contribution to fusion.
+those four numbers govern behaviour far more than they did. The map is now **locked and
+compared entry by entry** (P4c), so a tenant may raise severities but cannot lower one,
+drop a key, or zero the table. The values themselves remain the spec's estimate and
+deserve a deliberate review.
