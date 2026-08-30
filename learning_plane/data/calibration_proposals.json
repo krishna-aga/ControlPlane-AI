@@ -20,5 +20,49 @@
     "proposal_hash": "db8f8cdb76eec97d99484be48e53f1f4cf99367eeff4b243a640062a31341eec",
     "approved": true,
     "approved_at": "2026-08-30T14:23:53.426843+00:00"
+  },
+  {
+    "from_threshold": 0.3,
+    "to_threshold": 0.44,
+    "metrics_at_current": {
+      "threshold": 0.3,
+      "fp_rate": 0.1762,
+      "fn_rate": 0.0421,
+      "escalation_rate": 0.3,
+      "cost_per_1k": 2163.16
+    },
+    "metrics_at_candidate": {
+      "threshold": 0.44,
+      "fp_rate": 0.0337,
+      "fn_rate": 0.2211,
+      "escalation_rate": 0.1517,
+      "cost_per_1k": 7086.58
+    },
+    "proposed_at": "2026-08-30T18:02:02.145075+00:00",
+    "proposal_hash": "ca6131b88aea9a829244749092d2b841378ce257c252021377916e568ca37b3d",
+    "approved": true,
+    "approved_at": "2026-08-30T18:02:36.418822+00:00"
+  },
+  {
+    "from_threshold": 0.3,
+    "to_threshold": 0.46,
+    "metrics_at_current": {
+      "threshold": 0.3,
+      "fp_rate": 0.1762,
+      "fn_rate": 0.0421,
+      "escalation_rate": 0.3,
+      "cost_per_1k": 2163.16
+    },
+    "metrics_at_candidate": {
+      "threshold": 0.46,
+      "fp_rate": 0.0297,
+      "fn_rate": 0.2421,
+      "escalation_rate": 0.145,
+      "cost_per_1k": 7698.16
+    },
+    "proposed_at": "2026-08-30T18:13:35.161580+00:00",
+    "proposal_hash": "140d9ba4b7ebae79af480a4196301db96be39f3e2a61f576374ea7ac1610a8f8",
+    "approved": true,
+    "approved_at": "2026-08-30T18:13:51.791888+00:00"
   }
 ]
