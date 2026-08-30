@@ -137,10 +137,17 @@ floor to rescue it.
 
 > **Superseded in part.** Fusion has since moved to **max aggregation** and
 > `detector_weights` is gone, so weight dilution can no longer occur (see
-> [`RISK_FUSION.md`](RISK_FUSION.md) §5). The floor is still required: `high` scores
-> 0.75, which is below `high_band` of 0.70… in fact above it — but `medium` at 0.40 is
-> not, and the floor is what lets an org tighten `t0_floor_severity` to escalate weaker
-> findings. It is now a policy lever rather than a defence against arithmetic.
+> [`RISK_FUSION.md`](RISK_FUSION.md) §5). That also retired the floor's original job:
+> `high` scores **0.75**, which already clears the shipped `high_band` of **0.70**, so a
+> Track 2 secret now reaches BLOCK on its own arithmetic and the floor changes nothing
+> at the default settings.
+>
+> It is kept as a **policy lever**, not a defence. `medium` at 0.40 sits below the band,
+> so an org that wants blocklist hits to block tightens `t0_floor_severity` to `medium`
+> and gets that without touching `high_band` — which would move every other detector
+> too. It is also the insurance that a `high` finding still blocks if `high_band` is
+> ever raised above 0.75, though the lock direction (lower is stricter) means no tenant
+> can do that.
 
 The new `t0_floor_severity` (locked, default `high`) floors fused risk at `high_band`
 when any finding reaches that severity. Compared by **severity rank, never against the

@@ -162,9 +162,13 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
 
     # T0's floor is CATEGORICAL, compared by severity RANK rather than against the
     # normalized S scale - T0 has no threshold and so carries none of the 0.5-midpoint
-    # semantics that govern T1 (T0-2). It survives the move to max-aggregation because a
-    # `high` severity scores 0.75, which is below high_band; the floor is what carries a
-    # leaked credential the rest of the way to BLOCK.
+    # semantics that govern T1 (T0-2).
+    #
+    # At the shipped bands this is a POLICY LEVER, not a defence: `high` scores 0.75 and
+    # high_band is 0.70, so a leaked credential already blocks on its own arithmetic and
+    # the default `t0_floor_severity: high` changes no outcome. It earns its place when
+    # an org tightens it to `medium` (0.40) to make blocklist hits block, without moving
+    # high_band and thereby moving every other detector with it.
     floor_severity = bundle.get("t0_floor_severity", "high")
     if signals.t0_severities and floor_severity:
         threshold_rank = severity_rank(floor_severity)

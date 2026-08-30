@@ -26,15 +26,27 @@
 
 ### C. Compiled Bundles (`bundles/`)
 Generated, immutable JSON bundles ready for Data Plane loading:
-* `bundles/customer_support_bundle.json` (`policy_hash: 00c6376eb4a17160f9fd30f9ab901d3583cd85d4db409dad75c27b2119e08eae`)
-* `bundles/decision_support_bundle.json` (`policy_hash: c9f44190e17e05ab8e450756336813cc52fe48ad309893afdeab495e8dd574cb`)
-* `bundles/internal_copilot_bundle.json` (`policy_hash: e62f88268c077d44e1f167b609c4dc078b3e49f96bbbca80a2b874756b1de86a`)
+* `bundles/customer_support_bundle.json` (`policy_hash: 5f273bdc37e18c455cedd2ac17ba118ae4faff3d314a127fd4e912d4c3c654f9`)
+* `bundles/decision_support_bundle.json` (`policy_hash: 8addccea6c4c23c05d7f89dac26e3d594ea2616a85254c2f6080b3edec2c2b72`)
+* `bundles/internal_copilot_bundle.json` (`policy_hash: 044af819816bae9cda3087d4f76bbea48be5fa1cb8579820ea50392ff0dbcb10`)
 
-> Hashes changed twice: first when the bundles gained `detector_critical_thresholds`,
-> `t0_severity_scores`, and the T0/T1 detector configuration fields
-> (see `docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md`), and again when the
-> `policy_hash` reproducibility defect was fixed (see below). The values above are the
-> first ones that are actually reproducible — recompiling now returns the same hash.
+> Hashes have changed three times: when the bundles gained
+> `detector_critical_thresholds`, `t0_severity_scores` and the T0/T1 detector
+> configuration fields (see `docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md`); when the
+> `policy_hash` reproducibility defect was fixed (see below); and in `a7494eb`, which
+> added both severity maps to `locked_fields` to close P4c. `locked_fields` is itself a
+> hashed parameter, so locking a field changes the hash — as it must, since the lock is
+> part of what the bundle attests to.
+
+> **Nothing checks these three values against the repository.** `TestHashDeterminism`
+> asserts each committed bundle recompiles to its *own* stored hash, which keeps the
+> bundles self-consistent but says nothing about this file. The values recorded here
+> were three changes stale before anyone noticed. Re-read them from the bundles after
+> any recompile:
+>
+> ```bash
+> .venv/bin/python3 -c "import json,glob;[print(f, json.load(open(f))['policy_hash']) for f in sorted(glob.glob('bundles/*.json'))]"
+> ```
 
 > **`policy_hash` reproducibility (fixed).** `locked_fields` was built with
 > `list(set(...))`. Python randomizes string hashing per process, so the list order

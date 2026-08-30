@@ -102,7 +102,12 @@ toxicity P=0.80 alone  →  S=0.667  no floor        →  FLAG
 arithmetic left to game. Under max aggregation a severe detector already survives on its
 own, so the floors serve a narrower purpose: escalating a detector that is severe on its
 *own* scale to the severe action even when its normalized score sits below `high_band`.
-That is what carries a `high` T0 finding (0.75) the rest of the way to BLOCK.
+
+At the shipped bands that purpose is currently **vacant for T0**: `high` scores 0.75 and
+`high_band` is 0.70, so a `high` finding already blocks on its own arithmetic and
+`t0_floor_severity` changes no outcome until an org tightens it to `medium` (0.40). The
+T1 floors are the ones doing work — `pii` and `grounding` at critical 0.90 escalate
+scores that would otherwise land in the graded middle.
 
 The band comparison is `>=`, not `>`: a floor sets risk to exactly `high_band`, and a
 strict `>` would drop it into the graded middle.
