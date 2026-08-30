@@ -126,8 +126,15 @@ class DetectorSignals(BaseModel):
     without re-running every detector over historical traffic.
 
     Any field left None means the detector was NOT APPLICABLE for this request (no RAG
-    context, detector disabled). Fusion renormalizes the remaining weights rather than
-    scoring an absent detector as zero, which would silently dilute every other signal.
+    context, detector disabled). Under max aggregation an absent detector is simply
+    absent from the max, so this needs no applicability bookkeeping - scoring it as 0.0
+    instead would be wrong in the other direction for grounding, where 0.0 similarity is
+    the WORST possible value and would block every non-RAG request.
+
+    GAP (T1-7): there is no way to express "the detector ran and threw". `None` means
+    inapplicable, and a failed detector is currently indistinguishable from one that did
+    not apply - which leaves `fail_mode`'s only remaining trigger unreachable. See
+    docs/TIER_1.md.
     """
 
     t0_severities: List[str] = Field(default_factory=list)   # "hard" | "high" | "medium" | "low"

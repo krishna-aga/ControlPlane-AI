@@ -103,11 +103,25 @@ arithmetic left to game. Under max aggregation a severe detector already survive
 own, so the floors serve a narrower purpose: escalating a detector that is severe on its
 *own* scale to the severe action even when its normalized score sits below `high_band`.
 
-At the shipped bands that purpose is currently **vacant for T0**: `high` scores 0.75 and
-`high_band` is 0.70, so a `high` finding already blocks on its own arithmetic and
-`t0_floor_severity` changes no outcome until an org tightens it to `medium` (0.40). The
-T1 floors are the ones doing work — `pii` and `grounding` at critical 0.90 escalate
-scores that would otherwise land in the graded middle.
+**At the shipped bands that purpose is vacant for every detector.** A floor changes an
+outcome only when a detector's critical value sits *below* `high_band`; otherwise a
+detector reaching it has already cleared the band on its own. Measured against the
+committed bundles:
+
+```
+                critical_S      high_band     floor
+  pii              0.90    >=     0.70        REDUNDANT
+  grounding        0.90    >=     0.70        REDUNDANT
+  toxicity         0.95    >=     0.70        REDUNDANT
+  t0 `high`        0.75    >=     0.70        REDUNDANT
+```
+
+Band tightening does not rescue it — a flagged input *shrinks* `high_band`, widening the
+gap. The mechanism is not dead: it is live as a **tenant-tightenable lever**, since
+`detector_critical_thresholds` is `MAP_LOWER_IS_STRICTER` and lowering a critical value
+beneath the band makes it fire. But the shipped defaults look like safeguards and are
+not, and `_validate_critical_coherence` accepts every inert value without comment. See
+[`TIER_1.md`](TIER_1.md) T1-8.
 
 The band comparison is `>=`, not `>`: a floor sets risk to exactly `high_band`, and a
 strict `>` would drop it into the graded middle.

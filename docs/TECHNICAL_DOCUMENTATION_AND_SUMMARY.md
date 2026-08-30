@@ -92,6 +92,11 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
 ---
 
 ### E. Designed, Not Built
+* [`docs/TIER_1.md`](TIER_1.md) — grounding and toxicity contracts, and the **bias gap**:
+  Track 1 names bias, hallucination and privacy; "toxicity" is not bias, so the axis is
+  named and delegated to T2 rather than stubbed. Also records two defects in *shipped*
+  code that T1 exposes — `fail_mode`'s only trigger is unreachable (T1-7), and every
+  critical floor is inert at the shipped bands (T1-8).
 * [`docs/ORIGIN_AND_EXONERATION.md`](ORIGIN_AND_EXONERATION.md) — shared four-value origin
   resolver and the `context_exonerates` policy field. Decides when a finding echoed from
   the RAG corpus is safe: **context origin exonerates fabrication risk, not exposure
