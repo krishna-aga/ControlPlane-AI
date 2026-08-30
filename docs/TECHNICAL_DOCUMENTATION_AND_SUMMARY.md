@@ -26,17 +26,18 @@
 
 ### C. Compiled Bundles (`bundles/`)
 Generated, immutable JSON bundles ready for Data Plane loading:
-* `bundles/customer_support_bundle.json` (`policy_hash: 5f273bdc37e18c455cedd2ac17ba118ae4faff3d314a127fd4e912d4c3c654f9`)
-* `bundles/decision_support_bundle.json` (`policy_hash: 8addccea6c4c23c05d7f89dac26e3d594ea2616a85254c2f6080b3edec2c2b72`)
-* `bundles/internal_copilot_bundle.json` (`policy_hash: 044af819816bae9cda3087d4f76bbea48be5fa1cb8579820ea50392ff0dbcb10`)
+* `bundles/customer_support_bundle.json` (`policy_hash: 1cd00fbe31d1e98343056ea1c101d17781edef3baf360eeabff57fa7184af06a`)
+* `bundles/decision_support_bundle.json` (`policy_hash: 45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27`)
+* `bundles/internal_copilot_bundle.json` (`policy_hash: c65737aa1d5e7a9010705aabc8b80845bebdd2927733332a0f8a618a6d62018b`)
 
-> Hashes have changed three times: when the bundles gained
+> Hashes have changed four times: when the bundles gained
 > `detector_critical_thresholds`, `t0_severity_scores` and the T0/T1 detector
 > configuration fields (see `docs/POLICY_LOCKING_AND_RISK_NORMALIZATION.md`); when the
 > `policy_hash` reproducibility defect was fixed (see below); and in `a7494eb`, which
-> added both severity maps to `locked_fields` to close P4c. `locked_fields` is itself a
-> hashed parameter, so locking a field changes the hash — as it must, since the lock is
-> part of what the bundle attests to.
+> added both severity maps to `locked_fields` to close P4c; and when `caching_enabled`
+> and `cache_threshold` were locked (see [`SEMANTIC_CACHE.md`](SEMANTIC_CACHE.md) §6).
+> `locked_fields` is itself a hashed parameter, so locking a field changes the hash — as
+> it must, since the lock is part of what the bundle attests to.
 
 > **Nothing checks these three values against the repository.** `TestHashDeterminism`
 > asserts each committed bundle recompiles to its *own* stored hash, which keeps the
@@ -73,7 +74,7 @@ Run via `.venv/bin/python3 -m unittest discover -s tests`:
   (`compile_bundle.md` Validation Check 3). `test_hash_reproducibility` could not catch
   this — it hashes two hand-written dicts inside one interpreter, and the defect only
   appears across processes.
-* **Test Status:** 153/153 tests passing.
+* **Test Status:** 187/187 tests passing.
 
 ---
 
@@ -110,7 +111,7 @@ The incoming agent will build the **Data Plane** layer in `data_plane/gateway.py
 
 1. **Gateway Loader:** Load & cache `bundle.json` by `policy_hash`.
 2. **Input Gate:** Prompt injection check + PII scanner (`redact-and-proceed` / `block-and-explain` / `warn-and-confirm`).
-3. **Semantic Cache:** Keyed by `(tenant_id, scope, policy_hash, embedding)`. Return in $\sim 8\text{ ms}$ for non-volatile queries with zero PII detections.
+3. **Semantic Cache:** **Implemented** — see [`docs/SEMANTIC_CACHE.md`](SEMANTIC_CACHE.md). The key gained `system_prompt` and `context_docs` (a persona swap or different retrieved chunks must not share an answer) and `embedder_id` (vectors from different models are not comparable). Measured at **0.23–0.55 ms**, not the $\sim 8\text{ ms}$ estimated here — another unvalidated constant of the `T0_ESTIMATED_MS` kind.
 4. **Complexity Router:** Down-route simple tasks if permitted by bundle (`allow_downrouting: true`).
 5. **Model Call & Stream Monitor:** Wrap upstream LLM (BYOK); token runaway and repetition loop cut-off active.
 6. **Tiered Output Cascade:**

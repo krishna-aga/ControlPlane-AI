@@ -33,6 +33,7 @@ from pydantic import BaseModel, Field
 
 from data_plane import canary
 from data_plane.adapters import Credentials, ModelAdapter, ModelCallError, ModelResponse, get_adapter
+from data_plane.cache import SemanticCache, namespace_key, servable, storable
 from data_plane.detectors.pii import deanonymize
 from data_plane.detectors.t0 import run_t0
 from data_plane.fusion import fuse
@@ -56,6 +57,10 @@ class GatewayResult(BaseModel):
     output_tokens: int = 0
     provider_refused: bool = False
 
+    cache_similarity: float = 0.0
+    cache_source_request_id: str = ""
+    cache_skip_reason: str = ""
+
     input_gate: Optional[InputGateResult] = None
     t0: Optional[T0Result] = None
     fusion: Optional[FusionResult] = None
@@ -67,10 +72,12 @@ class Gateway:
 
     def __init__(self, adapter: Optional[ModelAdapter] = None,
                  sessions: Optional[SessionStore] = None,
-                 ledger: Optional[Ledger] = None):
+                 ledger: Optional[Ledger] = None,
+                 cache: Optional[SemanticCache] = None):
         self.adapter = adapter
         self.sessions = sessions or SessionStore()
         self.ledger = ledger or Ledger()
+        self.cache = cache or SemanticCache()
 
     # -- helpers ---------------------------------------------------------------------
 
@@ -142,6 +149,8 @@ class Gateway:
         credentials: Optional[Credentials] = None,
         system_prompt: str = "",
         context_docs: Optional[List[str]] = None,
+        tenant_id: Optional[str] = None,
+        entitlement_scope: str = "",
     ) -> GatewayResult:
         started = time.perf_counter()
         request_id = uuid.uuid4().hex
@@ -154,7 +163,9 @@ class Gateway:
 
         def finish(action: str, response: str, reason: str,
                    t0: Optional[T0Result] = None, fusion: Optional[FusionResult] = None,
-                   model: Optional[ModelResponse] = None) -> GatewayResult:
+                   model: Optional[ModelResponse] = None,
+                   served_from: str = "upstream", similarity: float = 0.0,
+                   source_request_id: str = "", skip_reason: str = "") -> GatewayResult:
             latency = (time.perf_counter() - started) * 1000.0
             row = self.ledger.append({
                 "request_id": request_id,
@@ -170,6 +181,15 @@ class Gateway:
                 "input_tokens": model.input_tokens if model else 0,
                 "output_tokens": model.output_tokens if model else 0,
                 "latency_ms": round(latency, 3),
+                # A cache hit still writes a row. Without one the audit trail has holes
+                # exactly where the cheap path ran, and "why did this user get this
+                # answer in March" would have no record for the fastest requests.
+                "cache": {
+                    "served_from": served_from,
+                    "similarity": round(similarity, 4),
+                    "source_request_id": source_request_id,
+                    "skip_reason": skip_reason,
+                },
             })
             return GatewayResult(
                 action=action, response=response, reason=reason,
@@ -179,6 +199,8 @@ class Gateway:
                 input_tokens=model.input_tokens if model else 0,
                 output_tokens=model.output_tokens if model else 0,
                 provider_refused=bool(model and model.provider_refused),
+                served_from=served_from, cache_similarity=similarity,
+                cache_source_request_id=source_request_id, cache_skip_reason=skip_reason,
                 input_gate=gate, t0=t0, fusion=fusion, ledger_row=row,
             )
 
@@ -189,6 +211,42 @@ class Gateway:
 
         # --- assemble the payload. The GATEWAY plants the canary, not the tenant ------
         scope = canary.mint(has_context=bool(context_docs))
+
+        # --- semantic cache -----------------------------------------------------------
+        # Placed AFTER the Input Gate and before the model call. Before the gate would
+        # let a poisoned prompt reach a cached answer without ever being scanned; after
+        # the model call there is nothing left to save.
+        cache_ok, cache_skip = servable(bundle, tenant_id, restore_map,
+                                        gate.action == "FLAG", len(messages))
+        namespace = ""
+        if cache_ok:
+            namespace = namespace_key(
+                tenant_id or "", entitlement_scope, bundle.get("policy_hash", ""),
+                system_prompt, context_docs, self.cache.embedder.id,
+            )
+            found = self.cache.lookup(namespace, gate.forward_prompt,
+                                      float(bundle["cache_threshold"]))
+            if found.hit and found.entry is not None:
+                # THE CACHE NEVER SKIPS TIER 0. Re-run it on the stored text against the
+                # bundle in force right now, so the invariant "nothing reaches a client
+                # unchecked by T0" holds without a cache-shaped exception. A stored entry
+                # that no longer passes is evicted rather than served.
+                revalidated = run_t0(found.entry.response, scope, {}, bundle,
+                                     gate.forward_prompt)
+                if revalidated.findings:
+                    self.cache.evict_entry(namespace, found.entry)
+                    cache_skip = "cached entry failed Tier 0 revalidation; evicted"
+                else:
+                    fusion = fuse(DetectorSignals(injection_risk=live_injection_risk), bundle)
+                    return finish(
+                        "ALLOW", found.entry.response,
+                        f"Served from cache ({found.reason}).",
+                        t0=revalidated, fusion=fusion, served_from="cache",
+                        similarity=found.similarity,
+                        source_request_id=found.entry.source_request_id,
+                    )
+            else:
+                cache_skip = found.reason
         upstream_system = canary.plant_system(system_prompt, scope)
         context_block = canary.plant_context(context_docs, scope)
 
@@ -243,12 +301,31 @@ class Gateway:
         if action == "REGENERATE":
             session.rework_count += 1
 
-        return finish(action, text, fusion.reason, t0=t0, fusion=fusion, model=model)
+        write_ok, write_skip = storable(
+            action, bundle, tenant_id, restore_map, len(t0.findings),
+            gate.action == "FLAG", len(messages), bool(model.provider_refused),
+        )
+        if write_ok and namespace:
+            self.cache.store(namespace, gate.forward_prompt, text, request_id,
+                             bundle.get("policy_hash", ""))
+        elif not write_ok:
+            cache_skip = write_skip
+
+        return finish(action, text, fusion.reason, t0=t0, fusion=fusion, model=model,
+                      skip_reason=cache_skip)
 
 
 def process_request(messages, bundle_path, session_id, credentials=None,
-                    system_prompt="", context_docs=None, gateway=None) -> GatewayResult:
-    """Module-level convenience entry point. Prefer `Gateway` when state must persist."""
+                    system_prompt="", context_docs=None, tenant_id=None,
+                    entitlement_scope="", gateway=None) -> GatewayResult:
+    """
+    Module-level convenience entry point. Prefer `Gateway` when state must persist.
+
+    Note that a fresh `Gateway` carries an empty cache, so this path never hits. That is
+    correct rather than unfortunate: a cache shared across gateway instances would be a
+    cache shared across whatever isolation the caller thought it had.
+    """
     return (gateway or Gateway()).process_request(
-        messages, bundle_path, session_id, credentials, system_prompt, context_docs
+        messages, bundle_path, session_id, credentials, system_prompt, context_docs,
+        tenant_id, entitlement_scope,
     )

@@ -10,4 +10,7 @@ pii_mode: warn-and-confirm
 fail_mode: fail_open
 allow_downrouting: true
 caching_enabled: true
-cache_threshold: 0.85
+# cache_threshold override REMOVED. It was 0.85 against an org baseline of 0.90 - a
+# loosening, which compiled cleanly only because the field was unlocked. Measured, the
+# shipped embedder scores "can I get a refund" against "can I NOT get a refund" at
+# 0.853, so 0.85 served the affirmative answer to the negated question. Inherits 0.90.

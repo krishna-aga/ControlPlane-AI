@@ -142,9 +142,10 @@ What is stored per session is **content-free**: hashes and counters, no message 
   absent detector as zero.
 * **T2 LLM judge** — `decision_support` sets `t2_enabled: true` and `fusion.t2_recommended`
   is computed, but nothing consumes it yet.
-* **Semantic cache and complexity router** — cut from prototype scope.
-  `caching_enabled`, `cache_threshold` and `allow_downrouting` are compiled into the
-  bundles but unconsumed.
+* **Complexity router** — still cut from prototype scope. `allow_downrouting` is now the
+  only compiled-but-unconsumed bundle field; the semantic cache was **built** and
+  consumes `caching_enabled` and `cache_threshold`
+  (see [`SEMANTIC_CACHE.md`](SEMANTIC_CACHE.md)).
 * **Retrieval gating** — refusing when no context chunk clears a similarity floor, so an
   off-topic request is refused before paying for a model call. Designed, not built; see
   §9.

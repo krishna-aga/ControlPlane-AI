@@ -45,6 +45,12 @@ HIGHER_IS_STRICTER = {
     "injection_evasion_penalty",
     # More contraction of the output bands after a flagged input -> stricter.
     "input_risk_tightening",
+    # cache_threshold is a minimum SIMILARITY before a cached answer may stand in for a
+    # fresh one, so raising it demands a closer match -> stricter. It reads like a
+    # performance knob and is in fact the loosest safety lever in the system: at a low
+    # enough value the cache serves arbitrary stored responses, skipping the model call
+    # and every tier behind it. See docs/SEMANTIC_CACHE.md
+    "cache_threshold",
 }
 
 # Booleans, by which value is the safer one.

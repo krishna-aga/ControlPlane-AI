@@ -20,7 +20,14 @@ toxicity_threshold: 0.7
 low_band: 0.3
 high_band: 0.7
 
-# Semantic cache default
+# Semantic cache. Both fields are SET here, not merely listed in locked_fields, because
+# resolve_policy() only compares a locked field present in the base dump (P6).
+#
+# cache_threshold is a safety lever wearing a performance lever's clothes. A cache hit
+# skips the model call, T1, T2 and fusion, so the threshold decides how different a
+# prompt may be before a past verdict is reused for it. Unlocked, a tenant could set 0.1
+# and serve essentially arbitrary stored answers. See docs/SEMANTIC_CACHE.md
+caching_enabled: true
 cache_threshold: 0.90
 
 # There are deliberately no detector weights. Fused risk is the MAXIMUM normalized
@@ -104,3 +111,10 @@ locked_fields:
   # is read directly by max-aggregation fusion rather than diluted by a weight.
   - detector_critical_thresholds
   - t0_severity_scores
+  # A cache hit is a decision to skip the checks. Both halves of that decision are the
+  # org's to make: tenants may disable caching or demand a closer match, never the
+  # reverse. internal_copilot shipped cache_threshold 0.85 against this 0.90 baseline
+  # until this lock existed, and at 0.85 the measured similarity between "can I get a
+  # refund" and "can I NOT get a refund" (0.853) is a HIT.
+  - caching_enabled
+  - cache_threshold

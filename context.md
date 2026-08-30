@@ -45,7 +45,7 @@ The system enforces different risk postures using identical gateway code driven 
 ## 4. Data Plane Pipeline Execution Order
 1. **Gateway Loader:** Resolves tenant scope, loads bundle by `policy_hash`.
 2. **Input Gate:** Prompt injection check + in-flight PII scanner (`redact-and-proceed` / `block-and-explain`).
-3. *(Semantic cache and complexity router are specified but out of scope for the prototype.)*
+3. **Semantic Cache:** Sits between the Input Gate and the model call. A hit skips the model call, T1, T2 and fusion — but **never Tier 0**, which is re-run on the stored text against the current bundle before delivery. Only a clean `ALLOW` is storable, and requests carrying PII are neither cached nor served (the redacted prompt makes two customers' requests identical). `cache_threshold` is a locked safety lever, not a performance knob. See `docs/SEMANTIC_CACHE.md`. *(The complexity router remains out of scope.)*
 4. **Model Call (BYOK):** Calls upstream model. The response is **buffered, not streamed** — the tiered cascade cannot `BLOCK`, `REDACT` or `REGENERATE` text already delivered to the client.
 5. **Tiered Output Checks:**
    * **T0 (Deterministic, ~5ms, ₹0):** Checksum ID validation (Luhn, Verhoeff), canary token scan, secret scan, blocklists.

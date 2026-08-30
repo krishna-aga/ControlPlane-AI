@@ -1,8 +1,8 @@
 {
   "policy_name": "decision-support-tool",
   "policy_version": "v1.0.0",
-  "policy_hash": "8addccea6c4c23c05d7f89dac26e3d594ea2616a85254c2f6080b3edec2c2b72",
-  "compiled_at": "2026-08-30T11:32:04.343213+00:00",
+  "policy_hash": "45b3806bd2629f3c7a404e9e7d93261196f70b8008c423e536322fe7003a0f27",
+  "compiled_at": "2026-08-30T12:59:11.091055+00:00",
   "description": "High-compliance regulated workflow decision support tool.",
   "t2_enabled": true,
   "pii_mode": "block-and-explain",
@@ -42,6 +42,8 @@
   "injection_evasion_penalty": 0.15,
   "input_risk_tightening": 0.5,
   "locked_fields": [
+    "cache_threshold",
+    "caching_enabled",
     "detector_critical_thresholds",
     "fail_mode",
     "grounding_threshold",
