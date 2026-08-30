@@ -60,6 +60,9 @@ ENUM_STRICTNESS = {
     # fusion, so the output cascade runs stricter. There is no 'sanitize' rung: lexical
     # removal of an injection forwards the remainder of the attack. See docs/INPUT_GATE.md
     "injection_action": ["allow", "flag", "block"],
+    # A LOWER floor severity fires on weaker findings, so it is stricter. Ordering runs
+    # least -> most strict, same convention as every other enum here.
+    "t0_floor_severity": ["hard", "high", "medium", "low"],
 }
 
 
@@ -192,6 +195,7 @@ def _apply_mandatory_defaults(policy_dict: Dict[str, Any]) -> None:
         "detector_critical_thresholds": {"pii": 0.90, "grounding": 0.90, "toxicity": 0.95},
         "t0_severity_scores": {"hard": 1.0, "high": 0.75, "medium": 0.40, "low": 0.15},
         "t0_aggregation": "max",
+        "t0_floor_severity": "high",
         "blocklist_terms": [],
         "secret_min_length": 24,
         "secret_entropy_ratio_threshold": 0.9,

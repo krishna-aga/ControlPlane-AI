@@ -25,7 +25,7 @@ defect the register found:
 
 from typing import Dict, List, Optional, Tuple
 
-from data_plane.models import DetectorSignals, FusionResult
+from data_plane.models import DetectorSignals, FusionResult, severity_rank
 
 # Detectors scored by the piecewise normalizer. T0 is deliberately absent: it is
 # categorical and scored by lookup instead.
@@ -161,6 +161,20 @@ def fuse(signals: DetectorSignals, bundle: Dict) -> FusionResult:
         if detector in normalized and detector in critical:
             if normalized[detector] >= float(critical[detector]):
                 fired.append(detector)
+
+    # T0's floor is CATEGORICAL, compared by severity rank rather than against the
+    # normalized S scale - T0 has no threshold and so carries none of the 0.5-midpoint
+    # semantics that govern T1 (T0-2). Without it a `high` T0 finding is diluted by the
+    # t0 weight: a leaked credential fuses to 0.33 and resolves to REDACT the moment any
+    # T1 detector also runs. That is the P4 defect reappearing on Tier 0.
+    floor_severity = bundle.get("t0_floor_severity", "high")
+    if signals.t0_severities and floor_severity:
+        threshold_rank = severity_rank(floor_severity)
+        if threshold_rank >= 0 and any(
+            severity_rank(s) >= threshold_rank for s in signals.t0_severities
+        ):
+            fired.append("t0")
+
     if fired:
         fused = max(fused, high_band)
 

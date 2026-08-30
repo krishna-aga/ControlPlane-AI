@@ -1,8 +1,8 @@
 {
   "policy_name": "customer-support-bot",
   "policy_version": "v1.0.0",
-  "policy_hash": "fa3120d0f9bd4fa21c443b0fc46464251db25d9fa6f55ee559c33d75674517ca",
-  "compiled_at": "2026-08-30T08:07:57.491188+00:00",
+  "policy_hash": "5f0a721ca93e67e67b2a1bc64f214bcb45c98c2598bf3e78e7b9d131e1aaf9f7",
+  "compiled_at": "2026-08-30T08:54:40.151344+00:00",
   "description": "Optimized for fast response times and customer interaction.",
   "t2_enabled": false,
   "pii_mode": "redact-and-proceed",
@@ -33,6 +33,7 @@
     "low": 0.15
   },
   "t0_aggregation": "max",
+  "t0_floor_severity": "high",
   "blocklist_terms": [],
   "secret_min_length": 24,
   "secret_entropy_ratio_threshold": 0.9,
@@ -56,6 +57,9 @@
     "input_risk_tightening",
     "low_band",
     "pii_threshold",
+    "secret_entropy_ratio_threshold",
+    "secret_min_length",
+    "t0_floor_severity",
     "toxicity_threshold"
   ]
 }

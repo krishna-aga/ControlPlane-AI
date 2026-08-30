@@ -56,6 +56,12 @@ class PolicyConfig(BaseModel):
     # scored by lookup rather than by the piecewise normalizer (see T0-2).
     t0_severity_scores: Optional[Dict[str, float]] = None
     t0_aggregation: Optional[Literal["max", "noisy_or"]] = None
+    # Categorical floor for T0. A finding at or above this severity floors fused risk at
+    # high_band, so a T0 signal cannot be diluted into REDACT by weight arithmetic - the
+    # P4 argument applied to Tier 0. Compared by severity ORDER, never on the normalized
+    # S scale, because T0 is categorical and shares no midpoint with T1 (T0-2).
+    # Ordered least -> most strict: a lower floor fires on weaker findings.
+    t0_floor_severity: Optional[Literal["hard", "high", "medium", "low"]] = None
 
     # Tier 0 secret detection (see t0_deterministic_checks.md)
     blocklist_terms: Optional[List[str]] = None
@@ -131,6 +137,7 @@ class BundleConfig(BaseModel):
         default_factory=lambda: {"hard": 1.0, "high": 0.75, "medium": 0.40, "low": 0.15}
     )
     t0_aggregation: Literal["max", "noisy_or"] = "max"
+    t0_floor_severity: Literal["hard", "high", "medium", "low"] = "high"
 
     # Tier 0 secret detection
     blocklist_terms: List[str] = Field(default_factory=list)

@@ -47,6 +47,12 @@ t0_severity_scores:
   low: 0.15
 t0_aggregation: max
 
+# A T0 finding at or above this severity floors fused risk at high_band, so it cannot be
+# diluted into REDACT by the t0 weight. Track 2 generic secrets are entropy heuristics,
+# not determinations, so they emit 'high' rather than 'hard' - they reach BLOCK through
+# this floor instead of vetoing the cascade. See docs/TIER_0.md (T0-1).
+t0_floor_severity: high
+
 # Tier 0 secret detection
 secret_min_length: 24
 secret_entropy_ratio_threshold: 0.9
@@ -89,3 +95,8 @@ locked_fields:
   - injection_evasion_penalty
   - input_risk_tightening
   - fail_mode
+  - t0_floor_severity
+  # §8C of t0_deterministic_checks.md: without these a tenant quietly disables generic
+  # secret detection by raising the ratio to 0.99 or the length floor out of range.
+  - secret_min_length
+  - secret_entropy_ratio_threshold

@@ -176,3 +176,70 @@ class FusionResult(BaseModel):
             "bands_tightened": self.bands_tightened,
             "t2_recommended": self.t2_recommended,
         }
+
+
+# Tier 0 severity ordering, ascending. T0 is CATEGORICAL: these are compared by rank,
+# never against the normalized S scale that governs T1, because T0 has no threshold and
+# so carries none of the 0.5-midpoint semantics (T0-2).
+SEVERITY_ORDER = ("low", "medium", "high", "hard")
+
+
+def severity_rank(severity: str) -> int:
+    return SEVERITY_ORDER.index(severity) if severity in SEVERITY_ORDER else -1
+
+
+class Finding(BaseModel):
+    """
+    One Tier 0 detection.
+
+    There is deliberately NO `value` field. Spans are sufficient for masking, so the
+    matched text is never needed downstream — and omitting it makes the type
+    STRUCTURALLY incapable of carrying a raw secret, PII value or canary token into the
+    audit ledger. The privacy rule stops depending on every future contributor
+    remembering to strip it.
+    """
+
+    check: Literal["canary", "pii_id", "secret", "blocklist"]
+    entity_type: str
+    span: Tuple[int, int]                 # offsets into the PRE-de-anonymization output
+    confidence: float
+    severity: Literal["hard", "high", "medium", "low"]
+    hard_override: bool = False
+    # Three values, not two. `warn-and-confirm` forwards raw PII and builds no
+    # placeholder map, so a benign echo of the user's own data would otherwise be
+    # labelled model_generated — inverting the exact distinction origin exists to draw
+    # (T0-4).
+    origin: Literal["model_generated", "echoed_placeholder", "echoed_from_input"] = "model_generated"
+
+
+class T0Result(BaseModel):
+    """Tier 0 outcome. `severities` is what fusion consumes; findings are for audit."""
+
+    findings: List[Finding] = Field(default_factory=list)
+    hard_override: bool = False
+    canary_leak: Optional[Literal["system", "context", "both"]] = None
+    latency_ms: float = 0.0
+
+    @property
+    def severities(self) -> List[str]:
+        """Severities of RISK-BEARING findings only — echoed placeholders score zero."""
+        return [f.severity for f in self.findings if f.origin == "model_generated"]
+
+    def ledger_row(self) -> Dict:
+        """Privacy-safe projection: types, spans and severities. Never values or canaries."""
+        return {
+            "hard_override": self.hard_override,
+            "canary_leak": self.canary_leak,
+            "findings": [
+                {
+                    "check": f.check,
+                    "entity_type": f.entity_type,
+                    "character_span": list(f.span),
+                    "confidence_score": f.confidence,
+                    "severity": f.severity,
+                    "origin": f.origin,
+                }
+                for f in self.findings
+            ],
+            "latency_ms": round(self.latency_ms, 3),
+        }
